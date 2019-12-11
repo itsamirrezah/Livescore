@@ -36,4 +36,18 @@ dependencies {
     //google material
     implementation 'com.google.android.material:material:1.1.0-beta01'
 
+    //Fast Adapter
+    implementation "com.mikepenz:fastadapter:4.1.1"
+
+    //Retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.6.2'
+    implementation 'com.squareup.retrofit2:converter-gson:2.6.2'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.2.2'
+
+    //RxJava
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.8'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.6.2'
+
+
 }
