@@ -2,8 +2,15 @@ package com.itsamirrezah.livescore
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.itsamirrezah.livescore.data.models.MatchResponse
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import butterknife.BindView
+import butterknife.ButterKnife
 import com.itsamirrezah.livescore.data.services.FootbalDataApiImp
+import com.itsamirrezah.livescore.items.MatchItem
+import com.mikepenz.fastadapter.FastAdapter
+import com.mikepenz.fastadapter.adapters.ItemAdapter
+import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -12,6 +19,12 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
+    @BindView(R.id.recyclerView)
+    lateinit var recyclerView: RecyclerView
+
+
+    private var itemAdapter = ItemAdapter<MatchItem>()
+    private lateinit var fastAdapter: FastAdapter<MatchItem>
     private var compositeDisposable = CompositeDisposable()
 
     /**
@@ -20,7 +33,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        ButterKnife.bind(this)
 
+        setupRecyclerView()
         requestMatches()
 
     }
@@ -34,6 +49,13 @@ class MainActivity : AppCompatActivity() {
     /**
      * Methods
      */
+
+    private fun setupRecyclerView() {
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        fastAdapter = FastAdapter.with(itemAdapter)
+        recyclerView.adapter = fastAdapter
+    }
+
 
     private fun requestMatches() {
         val requestMatches = FootbalDataApiImp.getApi()
@@ -59,11 +81,7 @@ class MainActivity : AppCompatActivity() {
     private fun getDate(step: Int): String {
         val today = Calendar.getInstance()
         today.add(Calendar.DAY_OF_MONTH, step)
-
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd")
-
-        return dateFormat.format(today.time)
-
+        return SimpleDateFormat("yyyy-MM-dd").format(today.time)
 
     }
 
