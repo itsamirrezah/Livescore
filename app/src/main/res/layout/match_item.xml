@@ -30,7 +30,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/tv_hometeam"
+                    android:id="@+id/tvHomeTeam"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center|center_vertical"
@@ -49,7 +49,7 @@
                 android:orientation="vertical">
 
                 <LinearLayout
-                    android:id="@+id/layout_matchfixture"
+                    android:id="@+id/lytMatchSchedule"
                     android:layout_width="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_height="wrap_content"
@@ -59,7 +59,7 @@
                     android:visibility="gone">
 
                     <TextView
-                        android:id="@+id/tv_matchfix_time"
+                        android:id="@+id/tvUtcDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
@@ -80,7 +80,7 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/layout_matchresult"
+                    android:id="@+id/lytMatchScore"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -95,7 +95,7 @@
                         android:orientation="horizontal">
 
                         <TextView
-                            android:id="@+id/tv_matchres_hometeam"
+                            android:id="@+id/tvHomeTeamScore"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
@@ -116,7 +116,7 @@
                             android:textSize="14sp" />
 
                         <TextView
-                            android:id="@+id/tv_matchres_awayteam"
+                            android:id="@+id/tvAwayTeamScore"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
@@ -129,7 +129,7 @@
                     </LinearLayout>
 
                     <TextView
-                        android:id="@+id/tv_matchres_time"
+                        android:id="@+id/tvMatchStatus"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
@@ -137,7 +137,7 @@
                         android:layout_weight="1"
                         android:textSize="6sp"
                         android:textStyle="italic"
-                        android:text="1st Half - 64" />
+                        android:text="Live" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -151,7 +151,7 @@
 
 
                 <TextView
-                    android:id="@+id/tv_awayteam"
+                    android:id="@+id/tvAwayTeam"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center|center_vertical"
