@@ -59,7 +59,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestMatches() {
         val requestMatches = FootbalDataApiImp.getApi()
-            .getMatches(getDate(0), getDate(5))
+            .getMatches(getDate(-2), getDate(3))
+            //returning matches one by one from matchResponse.matches
+            .flatMap { return@flatMap Observable.fromIterable(it.matches) }
+            //change api model to ui model
+            .map {
+                MatchItem(
+                    it.homeTeam.name,
+                    it.score.fullTime.homeTeam.toString(),
+                    it.awayTeam.name,
+                    it.score.fullTime.awayTeam.toString(),
+                    SimpleDateFormat("HH:mm").format(
+                        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(it.utcDate)
+                    ),
+                    it.status
+                )
+            }.toList()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(this::onResponse, this::onError)
@@ -68,8 +83,8 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun onResponse(MatchesResponse: List<MatchResponse>) {
-        print("test")
+    private fun onResponse(matchItems: List<MatchItem>) {
+        itemAdapter.add(matchItems)
     }
 
     private fun onError(throwable: Throwable) {
