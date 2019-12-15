@@ -72,22 +72,38 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestMatches() {
         val requestMatches = FootbalDataApiImp.getApi()
-            .getMatches(getDate(-2), getDate(3))
+            .getMatches(getDate(1), getDate(4))
             //returning matches one by one from matchResponse.matches
-            .flatMap { return@flatMap Observable.fromIterable(it.matches) }
+            .flatMap { Observable.fromIterable(it.matches) }
             //change api model to ui model
             .map {
-                MatchItem(
+                MatchModel(
                     it.homeTeam.name,
                     it.score.fullTime.homeTeam.toString(),
                     it.awayTeam.name,
                     it.score.fullTime.awayTeam.toString(),
-                    SimpleDateFormat("HH:mm").format(
-                        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(it.utcDate)
-                    ),
-                    it.status
+                    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(it.utcDate),
+                    it.status,
+                    it.competition,
+                    it.matchday
+                ) as ItemModel
+            }
+            //group emissions base on their match dates
+            .groupBy { (it as MatchModel).utcDate.date }
+            //convert Observable<GroupObservable<Int,ItemModel> to Single<List<ItemModel>>
+            .flatMapSingle { it.toList() }
+            //add DateItem model to start of the list
+            .map {
+                val match = it.first() as MatchModel
+                it.add(
+                    0,
+                    DateModel(
+                        SimpleDateFormat("E").format(match.utcDate.time),
+                        SimpleDateFormat("MMMM dd").format(match.utcDate.time)
+                    )
                 )
-            }.toList()
+                it
+            }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(this::onResponse, this::onError)
@@ -95,8 +111,7 @@ class MainActivity : AppCompatActivity() {
         compositeDisposable.add(requestMatches)
     }
 
-
-    private fun onResponse(matchItems: List<MatchItem>) {
+    private fun onResponse(matchItems: List<ItemModel>) {
         itemAdapter.add(matchItems)
     }
 
