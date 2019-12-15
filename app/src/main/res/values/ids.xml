@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item name="FastAdapterItem" type="id"/>
+    <item name="FastAdapterMatchItem" type="id"/>
+    <item name="FastAdapterCompetitionItem" type="id"/>
+    <item name="FastAdapterDateItem" type="id"/>
 </resources>

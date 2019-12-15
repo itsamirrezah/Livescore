@@ -1,15 +1,23 @@
-package com.itsamirrezah.livescore
+package com.itsamirrezah.livescore.ui.activities
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
+import com.itsamirrezah.livescore.R
 import com.itsamirrezah.livescore.data.services.FootbalDataApiImp
-import com.itsamirrezah.livescore.items.MatchItem
+import com.itsamirrezah.livescore.ui.items.CompetitionItem
+import com.itsamirrezah.livescore.ui.items.DateItem
+import com.itsamirrezah.livescore.ui.items.MatchItem
+import com.itsamirrezah.livescore.ui.model.CompetitionModel
+import com.itsamirrezah.livescore.ui.model.DateModel
+import com.itsamirrezah.livescore.ui.model.ItemModel
+import com.itsamirrezah.livescore.ui.model.MatchModel
 import com.mikepenz.fastadapter.FastAdapter
-import com.mikepenz.fastadapter.adapters.ItemAdapter
+import com.mikepenz.fastadapter.GenericFastAdapter
+import com.mikepenz.fastadapter.adapters.ModelAdapter
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -22,9 +30,15 @@ class MainActivity : AppCompatActivity() {
     @BindView(R.id.recyclerView)
     lateinit var recyclerView: RecyclerView
 
-
-    private var itemAdapter = ItemAdapter<MatchItem>()
-    private lateinit var fastAdapter: FastAdapter<MatchItem>
+    private val itemAdapter = ModelAdapter { item: ItemModel ->
+        when (item) {
+            is MatchModel -> return@ModelAdapter MatchItem(item)
+            is DateModel -> return@ModelAdapter DateItem(item)
+            is CompetitionModel -> return@ModelAdapter CompetitionItem((item))
+            else -> throw IllegalArgumentException()
+        }
+    }
+    private lateinit var fastAdapter: GenericFastAdapter
     private var compositeDisposable = CompositeDisposable()
 
     /**
@@ -52,10 +66,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         recyclerView.layoutManager = LinearLayoutManager(this)
-        fastAdapter = FastAdapter.with(itemAdapter)
+        fastAdapter = FastAdapter.with(listOf(itemAdapter))
         recyclerView.adapter = fastAdapter
     }
-
 
     private fun requestMatches() {
         val requestMatches = FootbalDataApiImp.getApi()
@@ -91,14 +104,10 @@ class MainActivity : AppCompatActivity() {
         print("test")
     }
 
-
     //step:0 => today, step:1 => tomorrow, ...
     private fun getDate(step: Int): String {
         val today = Calendar.getInstance()
         today.add(Calendar.DAY_OF_MONTH, step)
         return SimpleDateFormat("yyyy-MM-dd").format(today.time)
-
     }
-
-
 }
