@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.itsamirrezah.livescore.R
 import com.itsamirrezah.livescore.ui.model.MatchModel
 import com.mikepenz.fastadapter.items.ModelAbstractItem
-import java.text.SimpleDateFormat
 
 class MatchItem(
     val match: MatchModel
@@ -34,7 +33,7 @@ class MatchItem(
 
         holder.tvHomeTeam.setText(match.homeTeam)
         holder.tvAwayTeam.setText(match.awayTeam)
-        holder.tvUtcDate.setText(SimpleDateFormat("HH:mm").format(match.utcDate))
+        holder.tvUtcDate.setText(match.shortTime)
         holder.tvMatchStatus.setText(match.status.toLowerCase())
         holder.tvHomeTeamScore.setText(match.homeTeamScore)
         holder.tvAwayTeamScore.setText(match.awayTeamScore)

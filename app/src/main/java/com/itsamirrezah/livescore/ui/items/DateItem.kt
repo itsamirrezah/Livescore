@@ -23,7 +23,7 @@ class DateItem(
     override fun bindView(holder: DateViewHolder, payloads: MutableList<Any>) {
         super.bindView(holder, payloads)
         holder.tvDayOfWeek.setText(dateModel.dayOfWeek)
-        holder.tvDate.setText(dateModel.date)
+        holder.tvDate.setText(dateModel.dateOfMonth)
     }
 
     override fun unbindView(holder: DateViewHolder) {

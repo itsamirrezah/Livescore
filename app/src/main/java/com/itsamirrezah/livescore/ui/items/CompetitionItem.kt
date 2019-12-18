@@ -24,7 +24,7 @@ class CompetitionItem(
         super.bindView(holder, payloads)
 
         holder.tvCompName.setText(competition.competitionName)
-        holder.tvMatchday.append(competition.matchday)
+        holder.tvMatchday.append(competition.matchday.toString())
     }
 
     override fun unbindView(holder: CompetitionViewHolder) {

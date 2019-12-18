@@ -82,10 +82,10 @@ class MainActivity : AppCompatActivity() {
                     it.score.fullTime.homeTeam.toString(),
                     it.awayTeam.name,
                     it.score.fullTime.awayTeam.toString(),
-                    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(it.utcDate),
+                    it.utcDate,
                     it.status,
                     it.competition,
-                    it.matchday
+                    it.matchday.toString()
                 ) as ItemModel
             }
             //group emissions base on their match dates
