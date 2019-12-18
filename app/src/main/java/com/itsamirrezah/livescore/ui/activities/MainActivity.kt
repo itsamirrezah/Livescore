@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestMatches() {
         val requestMatches = FootbalDataApiImp.getApi()
-            .getMatches(getDate(1), getDate(4))
+            .getMatches(getDate(-2), getDate(4))
             //returning matches one by one from matchResponse.matches
             .flatMap { Observable.fromIterable(it.matches) }
             //change api model to ui model
@@ -87,23 +87,13 @@ class MainActivity : AppCompatActivity() {
                     it.competition,
                     it.matchday.toString()
                 ) as ItemModel
-            }
-            //group emissions base on their match dates
-            .groupBy { (it as MatchModel).utcDate.date }
-            //convert Observable<GroupObservable<Int,ItemModel> to Single<List<ItemModel>>
+            } //group emissions base on their match dates
+            .groupBy { it.shortDate.date }
+            //group emissions base on their competition.id
+            .switchMap { it.groupBy { it.competition!!.id } }
             .flatMapSingle { it.toList() }
-            //add DateItem model to start of the list
-            .map {
-                val match = it.first() as MatchModel
-                it.add(
-                    0,
-                    DateModel(
-                        SimpleDateFormat("E").format(match.utcDate.time),
-                        SimpleDateFormat("MMMM dd").format(match.utcDate.time)
-                    )
-                )
-                it
-            }
+            .groupBy { it.first().shortDate.date }
+            .flatMapSingle { it.toList() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(this::onResponse, this::onError)
@@ -111,12 +101,24 @@ class MainActivity : AppCompatActivity() {
         compositeDisposable.add(requestMatches)
     }
 
-    private fun onResponse(matchItems: List<ItemModel>) {
-        itemAdapter.add(matchItems)
+    private fun onResponse(matchItems: MutableList<MutableList<ItemModel>>) {
+        updateItemAdapter(matchItems)
     }
 
     private fun onError(throwable: Throwable) {
         print("test")
+    }
+
+    private fun updateItemAdapter(matchItems: MutableList<MutableList<ItemModel>>) {
+
+        itemAdapter.add(DateModel(matchItems.first().first().utcDate))
+        val matchesObservable = Observable.fromIterable(matchItems)
+            .map {
+                val match = it.first() as MatchModel
+                it.add(0, CompetitionModel(match.utcDate, match.competition, match.matchday))
+                it
+            }.subscribe { itemAdapter.add(it) }
+        compositeDisposable.add(matchesObservable)
     }
 
     //step:0 => today, step:1 => tomorrow, ...
