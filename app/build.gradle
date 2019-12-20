@@ -35,11 +35,12 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
 
-    //google material
+    //Material
     implementation 'com.google.android.material:material:1.1.0-beta01'
 
     //Fast Adapter
     implementation "com.mikepenz:fastadapter:4.1.1"
+    implementation "com.mikepenz:fastadapter-extensions-ui:4.1.1"
 
     //Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.6.2'

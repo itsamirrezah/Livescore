@@ -15,15 +15,17 @@ import com.itsamirrezah.livescore.ui.model.CompetitionModel
 import com.itsamirrezah.livescore.ui.model.DateModel
 import com.itsamirrezah.livescore.ui.model.ItemModel
 import com.itsamirrezah.livescore.ui.model.MatchModel
+import com.itsamirrezah.livescore.util.EndlessScrollListener
+import com.itsamirrezah.livescore.util.Utils
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.GenericFastAdapter
+import com.mikepenz.fastadapter.adapters.GenericItemAdapter
 import com.mikepenz.fastadapter.adapters.ModelAdapter
+import com.mikepenz.fastadapter.ui.items.ProgressItem
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import java.text.SimpleDateFormat
-import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,7 +41,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private lateinit var fastAdapter: GenericFastAdapter
+    private var footerAdapter = GenericItemAdapter()
+    private var headerAdapter = GenericItemAdapter()
     private var compositeDisposable = CompositeDisposable()
+    private var loadToTop = false
 
     /**
      * LifeCycle
@@ -66,8 +71,27 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         recyclerView.layoutManager = LinearLayoutManager(this)
-        fastAdapter = FastAdapter.with(listOf(itemAdapter))
+        fastAdapter = FastAdapter.with(listOf(headerAdapter, itemAdapter, footerAdapter))
         recyclerView.adapter = fastAdapter
+
+        val endlessScroll = object : EndlessScrollListener() {
+            override fun onLoadMore(fromTop: Boolean) {
+                loadToTop = fromTop
+                val dateArg: Pair<String, String>
+
+                if (!loadToTop) {
+                    footerAdapter.clear()
+                    footerAdapter.add(ProgressItem())
+                    dateArg = Utils.getDates(itemAdapter.models.last().shortDate, false)
+                } else {
+                    headerAdapter.clear()
+                    headerAdapter.add(ProgressItem())
+                    dateArg = Utils.getDates(itemAdapter.models.first().shortDate, true)
+                }
+                requestMatches(dateArg)
+            }
+        }
+        recyclerView.addOnScrollListener(endlessScroll)
     }
 
     private fun requestMatches() {
@@ -131,10 +155,13 @@ class MainActivity : AppCompatActivity() {
         print("test")
     }
 
-    //step:0 => today, step:1 => tomorrow, ...
-    private fun getDate(step: Int): String {
-        val today = Calendar.getInstance()
-        today.add(Calendar.DAY_OF_MONTH, step)
-        return SimpleDateFormat("yyyy-MM-dd").format(today.time)
+    private fun updateRecyclerView(items: MutableList<List<ItemModel>>) {
+        if (loadToTop) {
+            headerAdapter.clear()
+            itemAdapter.add(0, items.flatten())
+        } else {
+            footerAdapter.clear()
+            itemAdapter.add(items.flatten())
+        }
     }
 }
