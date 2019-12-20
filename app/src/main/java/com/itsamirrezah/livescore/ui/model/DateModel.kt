@@ -7,7 +7,7 @@ class DateModel(
 ) : ItemModel(utcDate){
 
     val dayOfWeek: String
-        get() = SimpleDateFormat("E").format(dateTime.time)
+        get() = SimpleDateFormat("EEEE").format(dateTime.time)
 
     val dateOfMonth: String
         get() = SimpleDateFormat("MMMM dd").format(dateTime.time)

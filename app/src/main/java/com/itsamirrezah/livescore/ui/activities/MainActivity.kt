@@ -55,8 +55,7 @@ class MainActivity : AppCompatActivity() {
         ButterKnife.bind(this)
 
         setupRecyclerView()
-        requestMatches()
-
+        requestMatches(Utils.getDates())
     }
 
     override fun onDestroy() {
@@ -94,9 +93,9 @@ class MainActivity : AppCompatActivity() {
         recyclerView.addOnScrollListener(endlessScroll)
     }
 
-    private fun requestMatches() {
+    private fun requestMatches(arg: Pair<String, String>) {
         val requestMatches = FootbalDataApiImp.getApi()
-            .getMatches(getDate(-2), getDate(4))
+            .getMatches(arg.first, arg.second)
             //returning matches one by one from matchResponse.matches
             .flatMap { Observable.fromIterable(it.matches) }
             //change api model to ui model
