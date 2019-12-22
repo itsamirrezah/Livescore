@@ -1,14 +1,18 @@
 package com.itsamirrezah.livescore.ui.model
 
-import java.text.SimpleDateFormat
+import com.itsamirrezah.livescore.util.Utils
 
 class DateModel(
     utcDate: String
-) : ItemModel(utcDate){
+) : ItemModel(utcDate) {
 
     val dayOfWeek: String
-        get() = SimpleDateFormat("EEEE").format(dateTime.time)
+        get() {
+            return if (Utils.daysDifference(localDate) <= 1) Utils.relativeDay(shortDate.time)
+            else Utils.dayOfWeekFormat(shortDate.time)
+        }
 
     val dateOfMonth: String
-        get() = SimpleDateFormat("MMMM dd").format(dateTime.time)
+        get() = Utils.shortRelativeDate(shortDate.time)
+
 }

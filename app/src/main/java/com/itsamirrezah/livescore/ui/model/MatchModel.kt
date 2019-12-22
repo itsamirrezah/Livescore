@@ -1,7 +1,7 @@
 package com.itsamirrezah.livescore.ui.model
 
 import com.itsamirrezah.livescore.data.models.Competition
-import java.text.SimpleDateFormat
+import com.itsamirrezah.livescore.util.Utils
 
 class MatchModel(
     val homeTeam: String,
@@ -15,5 +15,5 @@ class MatchModel(
 ) : ItemModel(utcDate,competition){
 
     val shortTime: String
-        get() = SimpleDateFormat("HH:mm").format(dateTime)
+        get() = Utils.clockFormat(dateTime)
 }
