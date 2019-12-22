@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
+import com.google.android.material.bottomappbar.BottomAppBar
 import com.itsamirrezah.livescore.R
 import com.itsamirrezah.livescore.data.services.FootbalDataApiImp
 import com.itsamirrezah.livescore.ui.items.CompetitionItem
@@ -17,6 +18,7 @@ import com.itsamirrezah.livescore.ui.model.ItemModel
 import com.itsamirrezah.livescore.ui.model.MatchModel
 import com.itsamirrezah.livescore.util.EndlessScrollListener
 import com.itsamirrezah.livescore.util.Utils
+import com.jakewharton.threetenabp.AndroidThreeTen
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.GenericFastAdapter
 import com.mikepenz.fastadapter.adapters.GenericItemAdapter
@@ -31,6 +33,8 @@ class MainActivity : AppCompatActivity() {
 
     @BindView(R.id.recyclerView)
     lateinit var recyclerView: RecyclerView
+    @BindView(R.id.bottomAppBar)
+    lateinit var bottomAppBar: BottomAppBar
 
     private val itemAdapter = ModelAdapter { item: ItemModel ->
         when (item) {
@@ -53,7 +57,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         ButterKnife.bind(this)
-
+        AndroidThreeTen.init(application)
+        setupBottomAppBar()
         setupRecyclerView()
         requestMatches(Utils.getDates())
     }
@@ -91,6 +96,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
         recyclerView.addOnScrollListener(endlessScroll)
+    }
+
+    private fun setupBottomAppBar() {
+        bottomAppBar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.itemToday -> recyclerView.scrollToPosition(getTodayPosition())
+            }
+            true
+        }
     }
 
     private fun requestMatches(arg: Pair<String, String>) {
@@ -163,5 +177,13 @@ class MainActivity : AppCompatActivity() {
             footerAdapter.clear()
             itemAdapter.add(items.flatten())
         }
+    }
+
+    private fun getTodayPosition(): Int {
+        return itemAdapter.models.indexOf(itemAdapter.models.find {
+            if (it is DateModel)
+                return@find it.dayOfWeek.toLowerCase().equals("today")
+            return@find false
+        })
     }
 }

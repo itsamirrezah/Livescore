@@ -23,9 +23,11 @@
 
 
         <com.google.android.material.bottomappbar.BottomAppBar
+            android:id="@+id/bottomAppBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:layout_gravity="bottom"
+            app:menu="@menu/bottomappbar_menu"
             app:navigationIcon="@drawable/ic_menu_black_24dp" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
