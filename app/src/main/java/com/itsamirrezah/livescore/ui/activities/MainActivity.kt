@@ -155,6 +155,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateRecyclerView(items: MutableList<List<ItemModel>>) {
+        items.sortBy { it.first().shortDate }
         if (loadToTop) {
             headerAdapter.clear()
             itemAdapter.add(0, items.flatten())
