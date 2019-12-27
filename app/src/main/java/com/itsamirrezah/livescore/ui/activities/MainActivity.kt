@@ -9,7 +9,12 @@ import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
 import com.google.android.material.bottomappbar.BottomAppBar
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipDrawable
+import com.google.android.material.chip.ChipGroup
 import com.itsamirrezah.livescore.R
+import com.itsamirrezah.livescore.data.models.Competition
 import com.itsamirrezah.livescore.data.services.FootbalDataApiImp
 import com.itsamirrezah.livescore.ui.items.CompetitionItem
 import com.itsamirrezah.livescore.ui.items.DateItem
@@ -116,14 +121,39 @@ class MainActivity : AppCompatActivity() {
         bottomAppBar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.itemToday -> recyclerView.scrollToPosition(getTodayPosition())
+                R.id.itemPreferences -> bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
             }
             true
         }
     }
 
+    private fun requestCompetitions() {
+        val requestCompetitions = FootbalDataApiImp.getApi().getCompetitions()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { addCompetitionChips(it.competitions) }
+
+        compositeDisposable.add(requestCompetitions)
+    }
+
+    private fun addCompetitionChips(competitions: List<Competition>) {
+        val chipGroup = coordinator.findViewById<ChipGroup>(R.id.chipGroupCompetition)
+        for (comp in competitions) {
+            val chip = Chip(chipGroup.context)
+            val chipDrawable = ChipDrawable.createFromAttributes(
+                chipGroup.context,
+                null,
+                0,
+                R.style.Chips
+            )
+            chip.setChipDrawable(chipDrawable)
+            chip.setText(comp.name)
+            chipGroup.addView(chip)
+        }
+    }
+
     private fun requestMatches(arg: Pair<String, String>) {
-        val requestMatches = FootbalDataApiImp.getApi()
-            .getMatches(arg.first, arg.second)
+        val requestMatches = FootbalDataApiImp.getApi().getMatches(arg.first, arg.second)
             //returning matches one by one from matchResponse.matches
             .flatMap { Observable.fromIterable(it.matches) }
             //change api model to ui model
@@ -162,7 +192,10 @@ class MainActivity : AppCompatActivity() {
                     //add CompetitionModel to start of the list
                     .map {
                         val match = it.first() as MatchModel
-                        it.add(0, CompetitionModel(match.utcDate, match.competition, match.matchday))
+                        it.add(
+                            0,
+                            CompetitionModel(match.utcDate, match.competition, match.matchday)
+                        )
                         it
                     } // wait until all emissions done, then return data (List<List<ItemModel>>>)
                     .toList()

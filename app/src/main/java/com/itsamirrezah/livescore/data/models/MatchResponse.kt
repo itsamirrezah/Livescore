@@ -49,13 +49,6 @@ data class Match(
 
 )
 
-data class Competition(
-    @SerializedName("id")
-    val id: Int,
-    @SerializedName("name")
-    val name: String
-)
-
 data class Season(
     @SerializedName("id")
     val id: Int,

@@ -1,5 +1,6 @@
 package com.itsamirrezah.livescore.data.services
 
+import com.itsamirrezah.livescore.data.models.CompetitionResponse
 import com.itsamirrezah.livescore.data.models.MatchResponse
 import io.reactivex.Observable
 import retrofit2.http.GET
@@ -15,4 +16,7 @@ interface FootballDataApi {
         @Query("dateFrom") dateFrom: String,
         @Query("dateTo") dateTo: String
     ): Observable<MatchResponse>
+
+    @GET("v2/competitions?plan=TIER_ONE")
+    fun getCompetitions(): Observable<CompetitionResponse>
 }
