@@ -7,6 +7,7 @@
     tools:context=".ui.activities.MainActivity">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/coordinator"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -14,8 +15,8 @@
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="@dimen/spacing_mlarge"
             android:layout_marginLeft="@dimen/spacing_medium"
+            android:layout_marginTop="@dimen/spacing_mlarge"
             android:layout_marginRight="@dimen/spacing_medium"
             android:layout_marginBottom="@dimen/spacing_xxlarge">
 
@@ -30,6 +31,7 @@
             app:menu="@menu/bottomappbar_menu"
             app:navigationIcon="@drawable/ic_menu_black_24dp" />
 
+        <include layout="@layout/filter_match_sheet" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 

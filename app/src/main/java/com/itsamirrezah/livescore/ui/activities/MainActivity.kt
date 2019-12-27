@@ -1,7 +1,9 @@
 package com.itsamirrezah.livescore.ui.activities
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
@@ -31,11 +33,15 @@ import io.reactivex.schedulers.Schedulers
 
 class MainActivity : AppCompatActivity() {
 
+    //views
     @BindView(R.id.recyclerView)
     lateinit var recyclerView: RecyclerView
     @BindView(R.id.bottomAppBar)
     lateinit var bottomAppBar: BottomAppBar
-
+    @BindView(R.id.coordinator)
+    lateinit var coordinator: CoordinatorLayout
+    lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
+    //data
     private val itemAdapter = ModelAdapter { item: ItemModel ->
         when (item) {
             is MatchModel -> return@ModelAdapter MatchItem(item)
@@ -60,6 +66,7 @@ class MainActivity : AppCompatActivity() {
         AndroidThreeTen.init(application)
         setupBottomAppBar()
         setupRecyclerView()
+        setupBottomSheets()
         requestMatches(Utils.getDates())
     }
 
@@ -96,6 +103,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
         recyclerView.addOnScrollListener(endlessScroll)
+    }
+
+    private fun setupBottomSheets() {
+        val bottomSheet = coordinator.findViewById(R.id.bottomSheet) as View
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        requestCompetitions()
     }
 
     private fun setupBottomAppBar() {
