@@ -14,7 +14,9 @@ interface FootballDataApi {
     @GET("v2/matches")
     fun getMatches(
         @Query("dateFrom") dateFrom: String,
-        @Query("dateTo") dateTo: String
+        @Query("dateTo") dateTo: String,
+        @Query("status") status: String,
+        @Query("competitions") competitions: String
     ): Observable<MatchResponse>
 
     @GET("v2/competitions?plan=TIER_ONE")

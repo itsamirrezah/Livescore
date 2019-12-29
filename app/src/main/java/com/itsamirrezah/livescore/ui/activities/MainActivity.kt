@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
+import butterknife.OnClick
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
@@ -24,6 +25,7 @@ import com.itsamirrezah.livescore.ui.model.DateModel
 import com.itsamirrezah.livescore.ui.model.ItemModel
 import com.itsamirrezah.livescore.ui.model.MatchModel
 import com.itsamirrezah.livescore.util.EndlessScrollListener
+import com.itsamirrezah.livescore.util.SharedPreferencesUtil
 import com.itsamirrezah.livescore.util.Utils
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.mikepenz.fastadapter.FastAdapter
@@ -46,6 +48,10 @@ class MainActivity : AppCompatActivity() {
     @BindView(R.id.coordinator)
     lateinit var coordinator: CoordinatorLayout
     lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
+    @BindView(R.id.chipGroupCompetition)
+    lateinit var chipGroupCompetition: ChipGroup
+    @BindView(R.id.chipGroupStatus)
+    lateinit var chipGroupStatus: ChipGroup
     //data
     private val itemAdapter = ModelAdapter { item: ItemModel ->
         when (item) {
@@ -60,6 +66,7 @@ class MainActivity : AppCompatActivity() {
     private var headerAdapter = GenericItemAdapter()
     private var compositeDisposable = CompositeDisposable()
     private var loadToTop = false
+    private lateinit var preferences: SharedPreferencesUtil
 
     /**
      * LifeCycle
@@ -69,10 +76,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         ButterKnife.bind(this)
         AndroidThreeTen.init(application)
+        setupSharedPreference()
         setupBottomAppBar()
         setupRecyclerView()
         setupBottomSheets()
-        requestMatches(Utils.getDates())
+        requestMatches()
     }
 
     override fun onDestroy() {
@@ -80,10 +88,36 @@ class MainActivity : AppCompatActivity() {
         compositeDisposable.clear()
     }
 
+    @OnClick(R.id.btnFilterDone)
+    fun filterDone() {
+        val competitionsSelected = mutableSetOf<String>()
+        for (i in 0 until chipGroupCompetition.childCount) {
+            val chip = chipGroupCompetition.getChildAt(i) as Chip
+            if (chip.isChecked)
+                competitionsSelected.add(chip.tag.toString())
+        }
+        setPreferences(
+            findViewById<Chip>(chipGroupStatus.checkedChipId).tag.toString(),
+            competitionsSelected
+        )
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        itemAdapter.clear()
+        requestMatches()
+    }
 
     /**
      * Methods
      */
+
+    private fun setupSharedPreference() {
+        preferences = SharedPreferencesUtil.getInstance(this)
+    }
+
+    private fun setPreferences(status: String, compIds: Set<String>) {
+        preferences.statusSelected = status
+        preferences.competitionsSelected = compIds
+    }
+
 
     private fun setupRecyclerView() {
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -121,12 +155,24 @@ class MainActivity : AppCompatActivity() {
         bottomAppBar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.itemToday -> recyclerView.scrollToPosition(getTodayPosition())
-                R.id.itemPreferences -> bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                R.id.itemPreferences -> expandBottomSheet()
             }
             true
         }
     }
 
+    private fun expandBottomSheet() {
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        //set view base on shared preferences values
+        val selectedStatus = preferences.statusSelected
+        val selectedComps = preferences.competitionsSelected
+        chipGroupStatus.findViewWithTag<Chip>(selectedStatus).isChecked = true
+        for (i in 0 until selectedComps.count())
+            chipGroupCompetition.findViewWithTag<Chip>(selectedComps.toList()[i].toInt())
+                .isChecked = true
+    }
+
+    //get available competitions from api
     private fun requestCompetitions() {
         val requestCompetitions = FootbalDataApiImp.getApi().getCompetitions()
             .subscribeOn(Schedulers.io())
@@ -137,23 +183,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addCompetitionChips(competitions: List<Competition>) {
-        val chipGroup = coordinator.findViewById<ChipGroup>(R.id.chipGroupCompetition)
+        //add chips programmatically
         for (comp in competitions) {
-            val chip = Chip(chipGroup.context)
+            val chip = Chip(chipGroupCompetition.context)
             val chipDrawable = ChipDrawable.createFromAttributes(
-                chipGroup.context,
+                chipGroupCompetition.context,
                 null,
                 0,
                 R.style.Chips
             )
             chip.setChipDrawable(chipDrawable)
-            chip.setText(comp.name)
-            chipGroup.addView(chip)
+            chip.text = comp.name
+            chip.tag = comp.id
+            chipGroupCompetition.addView(chip)
         }
     }
 
-    private fun requestMatches(arg: Pair<String, String>) {
-        val requestMatches = FootbalDataApiImp.getApi().getMatches(arg.first, arg.second)
+    private fun requestMatches(date: Pair<String, String>? = null) {
+
+        val compsArgs = preferences.competitionsSelected.toList().joinToString(",")
+        val statusArg = preferences.statusSelected
+        val datesArg = date ?: Utils.getDates()
+
+        val requestMatches = FootbalDataApiImp.getApi()
+            .getMatches(datesArg.first, datesArg.second, statusArg, compsArgs)
             //returning matches one by one from matchResponse.matches
             .flatMap { Observable.fromIterable(it.matches) }
             //change api model to ui model
