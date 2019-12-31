@@ -62,13 +62,6 @@ data class Season(
     val winner: String
 )
 
-data class Team(
-    @SerializedName("id")
-     val id: Int,
-    @SerializedName("name")
-     val name: String
-)
-
 data class Score(
     @SerializedName("winner")
     val winner: String,
