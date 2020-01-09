@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/match_fixture_parent"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginLeft="10dp"
-    android:layout_marginBottom="10dp"
     android:layout_marginTop="5dp"
     android:layout_marginRight="10dp"
+    android:layout_marginBottom="10dp"
     android:elevation="8dp"
-    android:id="@+id/match_fixture_parent"
     android:layoutDirection="inherit"
     android:orientation="vertical">
 
@@ -27,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/tvHomeTeam"
@@ -35,24 +35,32 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center|center_vertical"
                     android:layout_weight="1"
-                    android:textStyle="bold"
                     android:gravity="center|center_vertical"
                     android:maxLines="2"
                     android:text="Manchester United"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/ivHomeTeam"
+                    android:scaleType="fitCenter"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:src="@drawable/ic_launcher_background" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
                 android:layout_weight="0.2"
                 android:orientation="vertical">
 
                 <LinearLayout
                     android:id="@+id/lytMatchSchedule"
                     android:layout_width="wrap_content"
-                    android:layout_gravity="center_horizontal"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
@@ -63,10 +71,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:textStyle="bold"
                         android:gravity="center"
                         android:text="12:00"
-                        android:textSize="18sp" />
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tv_matchfix_stadium"
@@ -99,11 +107,11 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            android:textStyle="bold"
                             android:layout_weight="1"
                             android:gravity="center"
                             android:text="2"
-                            android:textSize="14sp" />
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -111,9 +119,9 @@
                             android:layout_gravity="center"
                             android:layout_weight="0.2"
                             android:gravity="center"
-                            android:textStyle="bold"
                             android:text="-"
-                            android:textSize="14sp" />
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/tvAwayTeamScore"
@@ -122,9 +130,9 @@
                             android:layout_gravity="center"
                             android:layout_weight="1"
                             android:gravity="center"
-                            android:textStyle="bold"
                             android:text="3"
-                            android:textSize="14sp" />
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
                     </LinearLayout>
 
@@ -133,11 +141,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:gravity="center"
                         android:layout_weight="1"
-                        android:textSize="6sp"
-                        android:textStyle="italic"
-                        android:text="Live" />
+                        android:gravity="center"
+                        android:text="Live"
+                        android:textSize="10sp"
+                        android:textStyle="italic|bold" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -145,10 +153,17 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_gravity="center_vertical"
-                android:orientation="vertical">
+                android:layout_weight="1"
+                android:orientation="horizontal">
 
+
+                <ImageView
+                    android:id="@+id/ivAwayTeam"
+                    android:layout_width="35dp"
+                    android:scaleType="fitCenter"
+                    android:layout_height="35dp"
+                    android:src="@drawable/ic_launcher_background" />
 
                 <TextView
                     android:id="@+id/tvAwayTeam"
@@ -156,11 +171,11 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center|center_vertical"
                     android:layout_weight="1"
-                    android:textStyle="bold"
                     android:gravity="center|center_vertical"
                     android:maxLines="2"
                     android:text="Manchester City"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
 

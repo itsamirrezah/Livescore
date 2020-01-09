@@ -1,14 +1,17 @@
 package com.itsamirrezah.livescore.ui.items
 
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.itsamirrezah.livescore.R
 import com.itsamirrezah.livescore.ui.model.MatchModel
+import com.itsamirrezah.livescore.util.svg.GlideApp
 import com.mikepenz.fastadapter.items.ModelAbstractItem
 
 class MatchItem(
-    val match: MatchModel
+    val match: MatchModel,
+    private val onTeamInfo: OnTeamInfo
 ) : ModelAbstractItem<MatchModel, MatchItem.MatchViewHolder>(match) {
 
     override val layoutRes: Int
@@ -31,23 +34,42 @@ class MatchItem(
             holder.lytMatchScore.visibility = View.VISIBLE
         }
 
-        holder.tvHomeTeam.setText(match.homeTeam)
-        holder.tvAwayTeam.setText(match.awayTeam)
-        holder.tvUtcDate.setText(match.shortTime)
-        holder.tvMatchStatus.setText(match.status.toLowerCase())
-        holder.tvHomeTeamScore.setText(match.homeTeamScore)
-        holder.tvAwayTeamScore.setText(match.awayTeamScore)
+        onTeamInfo.getTeamsFlag(match.homeTeam.id, match.awayTeam.id, object : OnResult {
+            override fun onSuccess(flags: Pair<String?, String?>) {
+                match.homeTeam.flag = flags.first
+                match.awayTeam.flag = flags.second
+
+                GlideApp
+                    .with(holder.itemView)
+                    .load(match.homeTeam.flag)
+                    .centerInside()
+                    .into(holder.ivHomeTeam)
+
+                GlideApp
+                    .with(holder.itemView)
+                    .load(match.awayTeam.flag)
+                    .centerInside()
+                    .into(holder.ivAwayTeam)
+            }
+        })
+
+        holder.tvHomeTeam.text = match.homeTeam.name
+        holder.tvAwayTeam.text = match.awayTeam.name
+        holder.tvUtcDate.text = match.shortTime
+        holder.tvMatchStatus.text = match.status.toLowerCase()
+        holder.tvHomeTeamScore.text = match.homeTeamScore
+        holder.tvAwayTeamScore.text = match.awayTeamScore
     }
 
     override fun unbindView(holder: MatchViewHolder) {
         super.unbindView(holder)
 
-        holder.tvHomeTeam.setText("")
-        holder.tvAwayTeam.setText("")
-        holder.tvUtcDate.setText("")
-        holder.tvMatchStatus.setText("")
-        holder.tvHomeTeamScore.setText("")
-        holder.tvAwayTeamScore.setText("")
+        holder.tvHomeTeam.text = ""
+        holder.tvAwayTeam.text = ""
+        holder.tvUtcDate.text = ""
+        holder.tvMatchStatus.text = ""
+        holder.tvHomeTeamScore.text = ""
+        holder.tvAwayTeamScore.text = ""
         holder.lytMatchSchedule.visibility = View.GONE
         holder.lytMatchSchedule.visibility = View.GONE
     }
@@ -62,5 +84,16 @@ class MatchItem(
         var tvHomeTeamScore: TextView = view.findViewById(R.id.tvHomeTeamScore)
         var tvAwayTeamScore: TextView = view.findViewById(R.id.tvAwayTeamScore)
         var tvMatchStatus: TextView = view.findViewById(R.id.tvMatchStatus)
+        var ivHomeTeam: ImageView = view.findViewById(R.id.ivHomeTeam)
+        var ivAwayTeam: ImageView = view.findViewById(R.id.ivAwayTeam)
+
     }
+}
+
+interface OnTeamInfo {
+    fun getTeamsFlag(homeTeamId: Int, awayTeamId: Int, onResult: OnResult)
+}
+
+interface OnResult {
+    fun onSuccess(flags: Pair<String?, String?>)
 }

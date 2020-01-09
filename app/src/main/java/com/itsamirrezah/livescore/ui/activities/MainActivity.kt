@@ -18,9 +18,7 @@ import com.itsamirrezah.livescore.R
 import com.itsamirrezah.livescore.data.db.LivescoreDb
 import com.itsamirrezah.livescore.data.models.Team
 import com.itsamirrezah.livescore.data.services.FootbalDataApiImp
-import com.itsamirrezah.livescore.ui.items.CompetitionItem
-import com.itsamirrezah.livescore.ui.items.DateItem
-import com.itsamirrezah.livescore.ui.items.MatchItem
+import com.itsamirrezah.livescore.ui.items.*
 import com.itsamirrezah.livescore.ui.model.*
 import com.itsamirrezah.livescore.util.EndlessScrollListener
 import com.itsamirrezah.livescore.util.SharedPreferencesUtil
@@ -34,6 +32,7 @@ import com.mikepenz.fastadapter.ui.items.ProgressItem
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
@@ -54,7 +53,7 @@ class MainActivity : AppCompatActivity() {
     //data
     private val itemAdapter = ModelAdapter { item: ItemModel ->
         when (item) {
-            is MatchModel -> return@ModelAdapter MatchItem(item)
+            is MatchModel -> return@ModelAdapter MatchItem(item, teamListener)
             is DateModel -> return@ModelAdapter DateItem(item)
             is CompetitionModel -> return@ModelAdapter CompetitionItem((item))
             else -> throw IllegalArgumentException()
@@ -336,5 +335,19 @@ class MainActivity : AppCompatActivity() {
                 return@find it.dayOfWeek.toLowerCase() == "today"
             return@find false
         })
+    }
+
+    private val teamListener: OnTeamInfo = object : OnTeamInfo {
+        override fun getTeamsFlag(homeTeamId: Int, awayTeamId: Int, onResult: OnResult) {
+            //combine the emission of two observables via the BiFunction
+            val matchFlags = Observable.zip(
+                LivescoreDb.getInstance(this@MainActivity).teamsDao().getTeamById(homeTeamId),
+                LivescoreDb.getInstance(this@MainActivity).teamsDao().getTeamById(awayTeamId),
+                BiFunction { home: Team, away: Team -> Pair(home.crestUrl, away.crestUrl) }
+            ).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { onResult.onSuccess(it) }
+            compositeDisposable.add(matchFlags)
+        }
     }
 }
