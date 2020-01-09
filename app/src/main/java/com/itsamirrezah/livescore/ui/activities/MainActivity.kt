@@ -15,15 +15,13 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipDrawable
 import com.google.android.material.chip.ChipGroup
 import com.itsamirrezah.livescore.R
-import com.itsamirrezah.livescore.data.models.Competition
+import com.itsamirrezah.livescore.data.db.LivescoreDb
+import com.itsamirrezah.livescore.data.models.Team
 import com.itsamirrezah.livescore.data.services.FootbalDataApiImp
 import com.itsamirrezah.livescore.ui.items.CompetitionItem
 import com.itsamirrezah.livescore.ui.items.DateItem
 import com.itsamirrezah.livescore.ui.items.MatchItem
-import com.itsamirrezah.livescore.ui.model.CompetitionModel
-import com.itsamirrezah.livescore.ui.model.DateModel
-import com.itsamirrezah.livescore.ui.model.ItemModel
-import com.itsamirrezah.livescore.ui.model.MatchModel
+import com.itsamirrezah.livescore.ui.model.*
 import com.itsamirrezah.livescore.util.EndlessScrollListener
 import com.itsamirrezah.livescore.util.SharedPreferencesUtil
 import com.itsamirrezah.livescore.util.Utils
@@ -37,6 +35,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -104,7 +103,7 @@ class MainActivity : AppCompatActivity() {
             findViewById<Chip>(chipGroupStatus.checkedChipId).tag.toString(),
             competitionsSelected
         )
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         itemAdapter.clear()
         requestMatches()
     }
@@ -121,7 +120,6 @@ class MainActivity : AppCompatActivity() {
         preferences.statusSelected = status
         preferences.competitionsSelected = compIds
     }
-
 
     private fun setupRecyclerView() {
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -152,7 +150,6 @@ class MainActivity : AppCompatActivity() {
         val bottomSheet = coordinator.findViewById(R.id.bottomSheet) as View
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-        requestCompetitions()
     }
 
     private fun setupBottomAppBar() {
@@ -166,12 +163,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun expandBottomSheet() {
+        addCompetitionChips()
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         //set view base on shared preferences values
         val selectedStatus = preferences.statusSelected
         val selectedComps = preferences.competitionsSelected
         chipGroupStatus.findViewWithTag<Chip>(selectedStatus).isChecked = true
-        for (i in 0 until selectedComps.count())
+        for (i in 0 until selectedComps!!.count())
             chipGroupCompetition.findViewWithTag<Chip>(selectedComps.toList()[i].toInt())
                 .isChecked = true
     }
@@ -187,7 +185,11 @@ class MainActivity : AppCompatActivity() {
             .toList()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { addCompetitionChips(it.competitions) }
+            .subscribe { competitions ->
+                //put data on shared preferences
+                preferences.serverCompetitions = competitions
+                requestTeams()
+            }
 
         compositeDisposable.add(requestCompetitions)
     }
@@ -247,24 +249,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestMatches(date: Pair<String, String>? = null) {
 
-        val compsArgs = preferences.competitionsSelected.toList().joinToString(",")
+        val compsArgs = preferences.competitionsSelected!!.toList().joinToString(",")
         val statusArg = preferences.statusSelected
         val datesArg = date ?: Utils.getDates()
 
         val requestMatches = FootbalDataApiImp.getApi()
-            .getMatches(datesArg.first, datesArg.second, statusArg, compsArgs)
+            .getMatches(datesArg.first, datesArg.second, statusArg!!, compsArgs)
             //returning matches one by one from matchResponse.matches
             .flatMap { Observable.fromIterable(it.matches) }
             //change api model to ui model
             .map {
                 MatchModel(
-                    it.homeTeam.name,
+                    mapTeamToUiModel(it.homeTeam),
                     it.score.fullTime.homeTeam.toString(),
-                    it.awayTeam.name,
+                    mapTeamToUiModel(it.awayTeam),
                     it.score.fullTime.awayTeam.toString(),
                     it.utcDate,
                     it.status,
-                    it.competition,
+                    CompetitionUi(it.competition.id, it.competition.name),
                     it.matchday.toString()
                 ) as ItemModel
             } //group emissions base on their match dates
@@ -280,6 +282,10 @@ class MainActivity : AppCompatActivity() {
             .subscribe(this::onResponse, this::onError)
 
         compositeDisposable.add(requestMatches)
+    }
+
+    private fun mapTeamToUiModel(team: Team): TeamModel {
+        return TeamModel(team.id, team.name)
     }
 
     //add ui element (DateItem and CompetitionItem) to recycler view based on result
@@ -307,7 +313,6 @@ class MainActivity : AppCompatActivity() {
             .toList()
             .subscribe { data -> updateRecyclerView(data) }
         compositeDisposable.add(matchesObservable)
-
     }
 
     private fun onError(throwable: Throwable) {
@@ -328,7 +333,7 @@ class MainActivity : AppCompatActivity() {
     private fun getTodayPosition(): Int {
         return itemAdapter.models.indexOf(itemAdapter.models.find {
             if (it is DateModel)
-                return@find it.dayOfWeek.toLowerCase().equals("today")
+                return@find it.dayOfWeek.toLowerCase() == "today"
             return@find false
         })
     }
