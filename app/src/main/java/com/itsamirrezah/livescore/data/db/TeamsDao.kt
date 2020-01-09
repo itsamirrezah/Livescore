@@ -11,7 +11,7 @@ import io.reactivex.Observable
 interface TeamsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertTeams(vararg teams: List<Team>)
+    fun insertTeams(teams: List<Team>)
 
     @Query("select * from teams where id = :id")
     fun getTeamById(id: Int): Observable<Team>

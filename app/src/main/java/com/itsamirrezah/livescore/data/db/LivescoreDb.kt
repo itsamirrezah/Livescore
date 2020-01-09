@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.itsamirrezah.livescore.data.models.Team
 
-@Database(entities = arrayOf(Team::class), version = 1)
+@Database(entities = arrayOf(Team::class), version = 1, exportSchema = false)
 abstract class LivescoreDb : RoomDatabase() {
 
     abstract fun teamsDao(): TeamsDao
@@ -16,7 +16,7 @@ abstract class LivescoreDb : RoomDatabase() {
         @Volatile
         private var instance: LivescoreDb? = null
 
-        private fun getInstance(context: Context): LivescoreDb {
+        fun getInstance(context: Context): LivescoreDb {
             if (instance == null)
                 instance = Room.databaseBuilder(context, LivescoreDb::class.java, "db")
                     .build()

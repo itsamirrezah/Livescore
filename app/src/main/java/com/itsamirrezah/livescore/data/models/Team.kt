@@ -7,20 +7,19 @@ import com.google.gson.annotations.SerializedName
 @Entity(tableName = "teams")
 data class Team(
 
-    @PrimaryKey
-    private val _id: Int,
+    @PrimaryKey(autoGenerate = false)
     @SerializedName("id")
-    private val id: Int,
+    val id: Int,
     @SerializedName("name")
-    private val name: String,
+    val name: String,
     @SerializedName("shortName")
-    private val shortName: String,
+    val shortName: String?,
     @SerializedName("tla")
-    private val tla: String,
+    val tla: String?,
     @SerializedName("crestUrl")
-    private val crestUrl: String,
+    val crestUrl: String?,
     @SerializedName("clubColors")
-    private val clubColors: String,
+    val clubColors: String?,
     @SerializedName("venue")
-    private val venue: String
+    val venue: String?
 )
