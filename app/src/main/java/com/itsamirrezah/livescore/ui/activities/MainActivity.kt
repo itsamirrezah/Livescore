@@ -81,6 +81,10 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         setupBottomSheets()
         requestMatches()
+        if (preferences.serverCompetitions.isEmpty())
+            requestCompetitions()
+        else if (preferences.localCompetitions!!.size < preferences.serverCompetitions.size)
+            requestTeams()
     }
 
     override fun onDestroy() {
@@ -175,6 +179,12 @@ class MainActivity : AppCompatActivity() {
     //get available competitions from api
     private fun requestCompetitions() {
         val requestCompetitions = FootbalDataApiImp.getApi().getCompetitions()
+            //returning competitions one by one from competitionResponse.competitions
+            .flatMap { Observable.fromIterable(it.competitions) }
+            //convert from data model to ui model
+            .map { CompetitionUi(it.id, it.name) }
+            //wait until all emissions done, then return data
+            .toList()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { addCompetitionChips(it.competitions) }
@@ -182,7 +192,43 @@ class MainActivity : AppCompatActivity() {
         compositeDisposable.add(requestCompetitions)
     }
 
-    private fun addCompetitionChips(competitions: List<Competition>) {
+    //fetch teams info from api and put them on shared preferences & local database
+    private fun requestTeams() {
+        val comps = preferences.serverCompetitions
+            //convert List<CompetitionUi> to List<String>
+            .map { it.id.toString() }
+            //returns a list containing all elements of the serverCompetitions which aren't available in localCompetitions
+            .minus(preferences.localCompetitions!!.toList())
+
+        val requestTeams = Observable.fromIterable(comps)
+            .switchMap {
+                //gets teams information from api
+                FootbalDataApiImp.getApi().getTeamsByCompetition(it.toInt())
+                    //if this call throws an exception, wait for 30 seconds, then repeat the request
+                    //common api error: api call limits has been reached (429)
+                    .retryWhen { it.delay(30, TimeUnit.SECONDS) }
+            }
+            //put teams info on local database
+            .doOnNext {
+                LivescoreDb.getInstance(this).teamsDao().insertTeams(it.teams)
+            }
+            //convert data model to ui model
+            .map { CompetitionUi(it.competition.id, it.competition.name) }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                //put retrieved competitions on shared preferences
+                val localComps = preferences.localCompetitions!!.toMutableSet()
+                localComps.add(it.id.toString())
+                preferences.localCompetitions = localComps.toSet()
+            }
+
+        compositeDisposable.add(requestTeams)
+    }
+
+    private fun addCompetitionChips() {
+        val competitions: List<CompetitionUi> = preferences.serverCompetitions
+        chipGroupCompetition.removeAllViews()
         //add chips programmatically
         for (comp in competitions) {
             val chip = Chip(chipGroupCompetition.context)
