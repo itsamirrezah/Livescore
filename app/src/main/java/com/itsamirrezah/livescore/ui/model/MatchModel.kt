@@ -1,16 +1,15 @@
 package com.itsamirrezah.livescore.ui.model
 
-import com.itsamirrezah.livescore.data.models.Competition
 import com.itsamirrezah.livescore.util.Utils
 
 class MatchModel(
-    val homeTeam: String,
+    val homeTeam: TeamModel,
     val homeTeamScore: String,
-    val awayTeam: String,
+    val awayTeam: TeamModel,
     val awayTeamScore: String,
     utcDate: String,
     val status: String,
-    competition: Competition,
+    competition: CompetitionUi,
     val matchday: String
 ) : ItemModel(utcDate,competition){
 

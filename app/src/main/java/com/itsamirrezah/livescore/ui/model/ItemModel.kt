@@ -1,13 +1,12 @@
 package com.itsamirrezah.livescore.ui.model
 
-import com.itsamirrezah.livescore.data.models.Competition
 import com.itsamirrezah.livescore.util.Utils
 import org.threeten.bp.LocalDate
 import java.util.*
 
 open class ItemModel(
     var utcDate: String,
-    var competition: Competition?
+    var competition: CompetitionUi?
 ) {
     constructor(utcDate: String) : this(utcDate, null)
 
