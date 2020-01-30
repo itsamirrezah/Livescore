@@ -4,16 +4,18 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.itsamirrezah.livescore.R
 import com.itsamirrezah.livescore.ui.model.MatchModel
-import com.itsamirrezah.livescore.util.svg.GlideApp
 import com.mikepenz.fastadapter.items.ModelAbstractItem
 
 class MatchItem(
-    val match: MatchModel,
-    private val onTeamInfo: OnTeamInfo
+    private val match: MatchModel,
+    private val onTeamInfo: OnTeamInfo,
+    private val glide: RequestManager
 ) : ModelAbstractItem<MatchModel, MatchItem.MatchViewHolder>(match) {
 
+    var isFlagLoaded = false
     override val layoutRes: Int
         get() = R.layout.match_item
     override val type: Int
@@ -34,24 +36,21 @@ class MatchItem(
             holder.lytMatchScore.visibility = View.VISIBLE
         }
 
-        onTeamInfo.getTeamsFlag(match.homeTeam.id, match.awayTeam.id, object : OnResult {
-            override fun onSuccess(flags: Pair<String?, String?>) {
-                match.homeTeam.flag = flags.first
-                match.awayTeam.flag = flags.second
+        if (!isFlagLoaded)
+            onTeamInfo.getTeamsFlag(match.homeTeam.id, match.awayTeam.id, object : OnResult {
+                override fun onSuccess() {
+                    isFlagLoaded = true
+                }
+            })
 
-                GlideApp
-                    .with(holder.itemView)
-                    .load(match.homeTeam.flag)
-                    .centerInside()
-                    .into(holder.ivHomeTeam)
-
-                GlideApp
-                    .with(holder.itemView)
-                    .load(match.awayTeam.flag)
-                    .centerInside()
-                    .into(holder.ivAwayTeam)
-            }
-        })
+        glide
+            .load(match.homeTeam.flagDrawable)
+            .placeholder(R.drawable.question_mark)
+            .into(holder.ivHomeTeam)
+        glide
+            .load(match.awayTeam.flagDrawable)
+            .placeholder(R.drawable.question_mark)
+            .into(holder.ivAwayTeam)
 
         holder.tvHomeTeam.text = match.homeTeam.name
         holder.tvAwayTeam.text = match.awayTeam.name
@@ -72,10 +71,11 @@ class MatchItem(
         holder.tvAwayTeamScore.text = ""
         holder.lytMatchSchedule.visibility = View.GONE
         holder.lytMatchSchedule.visibility = View.GONE
+        holder.ivAwayTeam.setImageDrawable(null)
+        holder.ivHomeTeam.setImageDrawable(null)
     }
 
     class MatchViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-
         var tvHomeTeam: TextView = view.findViewById(R.id.tvHomeTeam)
         var tvAwayTeam: TextView = view.findViewById(R.id.tvAwayTeam)
         var tvUtcDate: TextView = view.findViewById(R.id.tvUtcDate)
@@ -95,5 +95,5 @@ interface OnTeamInfo {
 }
 
 interface OnResult {
-    fun onSuccess(flags: Pair<String?, String?>)
+    fun onSuccess()
 }

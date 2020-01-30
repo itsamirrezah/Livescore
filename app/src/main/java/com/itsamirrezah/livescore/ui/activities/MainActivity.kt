@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
@@ -23,6 +24,7 @@ import com.itsamirrezah.livescore.ui.model.*
 import com.itsamirrezah.livescore.util.EndlessScrollListener
 import com.itsamirrezah.livescore.util.SharedPreferencesUtil
 import com.itsamirrezah.livescore.util.Utils
+import com.itsamirrezah.livescore.util.svg.GlideApp
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.GenericFastAdapter
@@ -32,9 +34,10 @@ import com.mikepenz.fastadapter.ui.items.ProgressItem
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.functions.BiFunction
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
+import io.reactivex.functions.BiFunction
 
 class MainActivity : AppCompatActivity() {
 
@@ -53,9 +56,9 @@ class MainActivity : AppCompatActivity() {
     //data
     private val itemAdapter = ModelAdapter { item: ItemModel ->
         when (item) {
-            is MatchModel -> return@ModelAdapter MatchItem(item, teamListener)
-            is DateModel -> return@ModelAdapter DateItem(item)
-            is CompetitionModel -> return@ModelAdapter CompetitionItem((item))
+            is MatchModel -> MatchItem(item, onTeamInfo, GlideApp.with(this))
+            is DateModel -> DateItem(item)
+            is CompetitionModel -> CompetitionItem((item))
             else -> throw IllegalArgumentException()
         }
     }
@@ -64,6 +67,7 @@ class MainActivity : AppCompatActivity() {
     private var headerAdapter = GenericItemAdapter()
     private var compositeDisposable = CompositeDisposable()
     private var loadToTop = false
+    lateinit var endlessScroll: EndlessScrollListener
     private lateinit var preferences: SharedPreferencesUtil
 
     /**
@@ -125,7 +129,7 @@ class MainActivity : AppCompatActivity() {
         fastAdapter = FastAdapter.with(listOf(headerAdapter, itemAdapter, footerAdapter))
         recyclerView.adapter = fastAdapter
 
-        val endlessScroll = object : EndlessScrollListener() {
+        endlessScroll = object : EndlessScrollListener() {
             override fun onLoadMore(fromTop: Boolean) {
                 loadToTop = fromTop
                 val dateArg: Pair<String, String>
@@ -252,8 +256,11 @@ class MainActivity : AppCompatActivity() {
         val statusArg = preferences.statusSelected
         val datesArg = date ?: Utils.getDates()
 
+        endlessScroll.disable()
         val requestMatches = FootbalDataApiImp.getApi()
             .getMatches(datesArg.first, datesArg.second, statusArg!!, compsArgs)
+            //retry the failed request after 15 seconds
+            .retryWhen { it.delay(15, TimeUnit.SECONDS) }
             //returning matches one by one from matchResponse.matches
             .flatMap { Observable.fromIterable(it.matches) }
             //change api model to ui model
@@ -319,6 +326,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateRecyclerView(items: MutableList<List<ItemModel>>) {
+        endlessScroll.enable()
         items.sortBy { it.first().shortDate }
         if (loadToTop) {
             headerAdapter.clear()
@@ -337,17 +345,61 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private val teamListener: OnTeamInfo = object : OnTeamInfo {
+    private val onTeamInfo: OnTeamInfo = object : OnTeamInfo {
+
+        var matchFlags: Disposable? = null
         override fun getTeamsFlag(homeTeamId: Int, awayTeamId: Int, onResult: OnResult) {
+
+            //get team flag urls from database
             //combine the emission of two observables via the BiFunction
-            val matchFlags = Observable.zip(
+            matchFlags = Observable.zip(
                 LivescoreDb.getInstance(this@MainActivity).teamsDao().getTeamById(homeTeamId),
                 LivescoreDb.getInstance(this@MainActivity).teamsDao().getTeamById(awayTeamId),
-                BiFunction { home: Team, away: Team -> Pair(home.crestUrl, away.crestUrl) }
-            ).subscribeOn(Schedulers.io())
+                BiFunction { homeTeam: Team, awayTeam: Team ->
+                    //map data model to ui model
+                    Pair(
+                        TeamModel(homeTeam.id, homeTeam.name, homeTeam.crestUrl),
+                        TeamModel(awayTeam.id, awayTeam.name, awayTeam.crestUrl)
+                    )
+                }
+            //get flags drawable
+            ).map {
+                    val homeDrawable = try {
+                        Glide.with(this@MainActivity).load(it.first.flag).submit().get()
+                    } catch (e: Exception) {
+                        null
+                    }
+                    val awayDrawable = try {
+                        Glide.with(this@MainActivity).load(it.second.flag).submit().get()
+                    } catch (e: Exception) {
+                        null
+                    }
+
+                    it.first.flagDrawable = homeDrawable
+                    it.second.flagDrawable = awayDrawable
+                    it
+                }.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { onResult.onSuccess(it) }
-            compositeDisposable.add(matchFlags)
+                .subscribe({ data ->
+                    //todo: replace if condition with match.id
+                    if (data.first.flagDrawable != null || data.first.flagDrawable != null)
+                        itemAdapter.models
+                            .asSequence()
+                            .filterIsInstance<MatchModel>()
+                            .find {
+                                //todo: use match.id
+                                return@find it.homeTeam.id == data.first.id && it.awayTeam.id == data.second.id
+                            }
+                            .apply {
+                                //update recyclerView with new flags
+                                this!!.homeTeam.flagDrawable = data.first.flagDrawable
+                                this.awayTeam.flagDrawable = data.second.flagDrawable
+                                fastAdapter.notifyAdapterItemChanged(itemAdapter.models.indexOf(this))
+                                onResult.onSuccess()
+                            }
+                }, {
+                    print(it.message)
+                })
         }
     }
 }
