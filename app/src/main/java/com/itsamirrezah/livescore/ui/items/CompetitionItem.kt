@@ -12,7 +12,7 @@ class CompetitionItem(
 ) : ModelAbstractItem<CompetitionModel, CompetitionItem.CompetitionViewHolder>(competition) {
 
     override val layoutRes: Int
-        get() = R.layout.match_competition_header_item
+        get() = R.layout.competition_item
     override val type: Int
         get() = R.id.FastAdapterCompetitionItem
 

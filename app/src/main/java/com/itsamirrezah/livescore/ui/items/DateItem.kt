@@ -12,7 +12,7 @@ class DateItem(
 ) : ModelAbstractItem<DateModel, DateItem.DateViewHolder>(dateModel) {
 
     override val layoutRes: Int
-        get() = R.layout.match_date_header_item
+        get() = R.layout.date_item
     override val type: Int
         get() = R.id.FastAdapterDateItem
 

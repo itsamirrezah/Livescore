@@ -31,6 +31,7 @@
 
                 <TextView
                     android:id="@+id/tvHomeTeam"
+                    style="@style/TextAppearance.AppCompat.Headline"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center|center_vertical"
@@ -38,30 +39,31 @@
                     android:gravity="center|center_vertical"
                     android:maxLines="2"
                     android:text="Manchester United"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
+
+                <View
+                    android:layout_width="5dp"
+                    android:layout_height="0dp" />
 
                 <ImageView
                     android:id="@+id/ivHomeTeam"
-                    android:scaleType="fitCenter"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@drawable/ic_launcher_background" />
+                    android:layout_width="50dp"
+                    android:layout_height="50dp" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_weight="0.2"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_weight="0.3"
                 android:orientation="vertical">
 
                 <LinearLayout
                     android:id="@+id/lytMatchSchedule"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_weight="1"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:visibility="gone">
@@ -90,7 +92,7 @@
                 <LinearLayout
                     android:id="@+id/lytMatchScore"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="0dp"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
@@ -99,52 +101,58 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
+                        android:gravity="center"
                         android:orientation="horizontal">
 
                         <TextView
                             android:id="@+id/tvHomeTeamScore"
-                            android:layout_width="0dp"
+                            style="@style/TextAppearance.AppCompat.Headline"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            android:layout_weight="1"
                             android:gravity="center"
                             android:text="2"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:textSize="18sp"
+                            />
+
+                        <View
+                            android:layout_width="10dp"
+                            android:layout_height="0dp" />
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            android:layout_weight="0.2"
                             android:gravity="center"
-                            android:text="-"
-                            android:textSize="14sp"
+                            android:text="|"
+                            android:textSize="24sp"
                             android:textStyle="bold" />
+
+                        <View
+                            android:layout_width="10dp"
+                            android:layout_height="0dp" />
 
                         <TextView
                             android:id="@+id/tvAwayTeamScore"
-                            android:layout_width="0dp"
+                            style="@style/TextAppearance.AppCompat.Headline"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            android:layout_weight="1"
                             android:gravity="center"
                             android:text="3"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:textSize="18sp" />
 
                     </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvMatchStatus"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="0dp"
                         android:layout_gravity="center"
-                        android:layout_weight="1"
+                        android:layout_weight="0.2"
                         android:gravity="center"
                         android:text="Live"
-                        android:textSize="10sp"
+                        android:textSize="12sp"
                         android:textStyle="italic|bold" />
                 </LinearLayout>
 
@@ -160,13 +168,17 @@
 
                 <ImageView
                     android:id="@+id/ivAwayTeam"
-                    android:layout_width="35dp"
-                    android:scaleType="fitCenter"
-                    android:layout_height="35dp"
-                    android:src="@drawable/ic_launcher_background" />
+                    android:layout_width="50dp"
+                    android:layout_height="50dp" />
+
+                <View
+                    android:layout_width="5dp"
+                    android:layout_height="0dp" />
+
 
                 <TextView
                     android:id="@+id/tvAwayTeam"
+                    style="@style/TextAppearance.AppCompat.Headline"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center|center_vertical"
@@ -174,7 +186,7 @@
                     android:gravity="center|center_vertical"
                     android:maxLines="2"
                     android:text="Manchester City"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>

@@ -7,33 +7,35 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:orientation="horizontal"
+        android:layout_height="wrap_content"
         android:layout_margin="@dimen/spacing_medium"
-        android:layout_height="wrap_content">
+        android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/tvCompetitionName"
+            android:id="@+id/tvDayOfWeek"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
             android:textColor="?android:textColorPrimary"
             android:textStyle="bold"
-            tools:text="Premier League" />
+            tools:text="Thursday" />
 
-        <View android:layout_height="0dp"
-            android:layout_width="@dimen/spacing_small">
+        <View
+            android:layout_width="@dimen/spacing_medium"
+            android:layout_height="0dp">
 
         </View>
+
         <TextView
-            android:id="@+id/tvMatchday"
-            android:layout_gravity="center_vertical"
+            android:id="@+id/tvDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="9sp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
             android:textColor="?android:textColorPrimary"
-            tools:text="Matchday #" />
+            tools:text="31 October" />
 
     </LinearLayout>
 
