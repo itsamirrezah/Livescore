@@ -17,3 +17,6 @@ Livescore app with [Football Data](https://www.football-data.org/) api (work in 
 - [ ] Dependency Injection (Dagger/Koin)
 - [ ] Jetpack Components (Navigation, Paging, Slices, WorkManager, etc)
 - [ ] View Binding
+
+#### Contribute
+If you want to contribute in this repository feel free to fork the repo and hopefully we can learn from each other. your help is very welcome.
