@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorPrimary"
     tools:context=".ui.activities.MainActivity">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -27,6 +28,7 @@
             android:id="@+id/bottomAppBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            app:backgroundTint="@color/colorPrimaryDark"
             android:layout_gravity="bottom"
             app:menu="@menu/bottomappbar_menu"
             app:navigationIcon="@drawable/ic_menu_black_24dp" />

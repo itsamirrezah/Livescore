@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorPrimary">#e7ecf3</color>
+    <color name="colorPrimaryDark">#c6d0da</color>
+    <color name="colorSecondary">#c6d0da</color>
     <color name="colorAccent">#D81B60</color>
+
+    <!--chips-->
+    <color name="chipBackgroundActiveItems">@color/md_grey_400</color>
+    <color name="chipBackgroundInactiveItems">@android:color/white</color>
+
+    <!--buttons-->
+    <color name="btnBackgroundColor">@color/overlay_light_80</color>
 
     <!--Colors-->
     <color name="amber_100">#FFECB3</color>
@@ -293,7 +301,6 @@
     <color name="overlay_dark_70">#B3000000</color>
     <color name="overlay_dark_80">#CC000000</color>
     <color name="overlay_dark_90">#E6000000</color>
-
     <color name="overlay_light_10">#1AFFFFFF</color>
     <color name="overlay_light_20">#33FFFFFF</color>
     <color name="overlay_light_30">#4DFFFFFF</color>
