@@ -1,8 +1,10 @@
 package com.itsamirrezah.livescore.ui.activities
 
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -35,9 +37,9 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
-import io.reactivex.functions.BiFunction
 
 class MainActivity : AppCompatActivity() {
 
@@ -160,6 +162,17 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.itemToday -> recyclerView.scrollToPosition(getTodayPosition())
                 R.id.itemPreferences -> expandBottomSheet()
+                R.id.itemNight -> {
+                    val nightMode = !preferences.isNightMode
+                    Handler().postDelayed({
+                        if (nightMode)
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                        else
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+                        preferences.isNightMode = nightMode
+                    }, 500)
+                }
             }
             true
         }

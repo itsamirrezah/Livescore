@@ -1,4 +1,6 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/md_grey_600" android:state_checked="true" />
-    <item android:color="@android:color/black" android:state_checked="false" />
+    <!--selected item text color-->
+    <item android:color="?android:textColorPrimary" android:state_checked="true" />
+    <!--non selected items text colors-->
+    <item android:color="?android:textColorPrimary" android:state_checked="false" />
 </selector>

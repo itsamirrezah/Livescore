@@ -31,6 +31,10 @@ class SharedPreferencesUtil(context: Context) {
         get() = pref!!.getStringSet("LOCAL_COMPETITION", setOf())
         set(value) = pref!!.edit().putStringSet("LOCAL_COMPETITION", value).apply()
 
+    var isNightMode: Boolean
+        get() = pref!!.getBoolean("NIGHT_MODE", false)
+        set(value) = pref!!.edit().putBoolean("NIGHT_MODE", value).apply()
+
     private fun mapGsonToCompUiModel(gson: String?): List<CompetitionUi> {
         if (gson == null)
             return listOf()

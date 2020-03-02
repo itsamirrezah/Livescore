@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#15202b</color>
+    <color name="colorPrimaryDark">#131d26</color>
+    <color name="colorSecondary">#263341</color>
+
+    <!--chips-->
+    <color name="chipBackgroundActiveItems">@color/overlay_light_30</color>
+    <color name="chipBackgroundInactiveItems">@color/colorPrimaryDark</color>
+
+    <!--buttons-->
+    <color name="btnBackgroundColor">#263341</color>
+
+
+</resources>

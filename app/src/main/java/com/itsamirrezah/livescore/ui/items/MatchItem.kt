@@ -45,11 +45,11 @@ class MatchItem(
 
         glide
             .load(match.homeTeam.flagDrawable)
-            .placeholder(R.drawable.question_mark)
+            .placeholder(R.drawable.ic_question_mark)
             .into(holder.ivHomeTeam)
         glide
             .load(match.awayTeam.flagDrawable)
-            .placeholder(R.drawable.question_mark)
+            .placeholder(R.drawable.ic_question_mark)
             .into(holder.ivAwayTeam)
 
         holder.tvHomeTeam.text = match.homeTeam.name
