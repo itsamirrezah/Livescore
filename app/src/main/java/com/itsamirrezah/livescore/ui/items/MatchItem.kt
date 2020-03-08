@@ -1,10 +1,12 @@
 package com.itsamirrezah.livescore.ui.items
 
+import android.content.Context
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.RequestManager
+import com.bumptech.glide.Glide
 import com.itsamirrezah.livescore.R
 import com.itsamirrezah.livescore.ui.model.MatchModel
 import com.mikepenz.fastadapter.items.ModelAbstractItem
@@ -12,7 +14,7 @@ import com.mikepenz.fastadapter.items.ModelAbstractItem
 class MatchItem(
     private val match: MatchModel,
     private val onTeamInfo: OnTeamInfo,
-    private val glide: RequestManager
+    private val context: Context
 ) : ModelAbstractItem<MatchModel, MatchItem.MatchViewHolder>(match) {
 
     var isFlagLoaded = false
@@ -43,13 +45,13 @@ class MatchItem(
                 }
             })
 
-        glide
+        Glide.with(context)
             .load(match.homeTeam.flagDrawable)
-            .placeholder(R.drawable.ic_question_mark)
+            .placeholder(ContextCompat.getDrawable(context, R.drawable.ic_question_mark))
             .into(holder.ivHomeTeam)
-        glide
+        Glide.with(context)
             .load(match.awayTeam.flagDrawable)
-            .placeholder(R.drawable.ic_question_mark)
+            .placeholder(ContextCompat.getDrawable(context, R.drawable.ic_question_mark))
             .into(holder.ivAwayTeam)
 
         holder.tvHomeTeam.text = match.homeTeam.name

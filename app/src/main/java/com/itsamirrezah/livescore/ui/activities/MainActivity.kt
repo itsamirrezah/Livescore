@@ -6,6 +6,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
@@ -58,7 +59,7 @@ class MainActivity : AppCompatActivity() {
     //data
     private val itemAdapter = ModelAdapter { item: ItemModel ->
         when (item) {
-            is MatchModel -> MatchItem(item, onTeamInfo, GlideApp.with(this))
+            is MatchModel -> MatchItem(item, onTeamInfo, this)
             is DateModel -> DateItem(item)
             is CompetitionModel -> CompetitionItem((item))
             else -> throw IllegalArgumentException()
@@ -158,6 +159,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupBottomAppBar() {
+        val itemNight = bottomAppBar.menu.findItem(R.id.itemNight)
+        itemNight.icon = if (preferences.isNightMode) {
+            ContextCompat.getDrawable(this, R.drawable.ic_sun_black_24dp)
+        } else {
+            ContextCompat.getDrawable(this, R.drawable.ic_moon_black_24dp)
+        }
+
         bottomAppBar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.itemToday -> recyclerView.scrollToPosition(getTodayPosition())
@@ -171,7 +179,7 @@ class MainActivity : AppCompatActivity() {
                             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
                         preferences.isNightMode = nightMode
-                    }, 500)
+                    }, 300)
                 }
             }
             true
