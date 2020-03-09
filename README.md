@@ -1,8 +1,7 @@
 # Livescore App
 Livescore app with [Football Data](https://www.football-data.org/) api (work in progress)
 
-
-#### Using
+### Using
 * [FastAdapter](https://github.com/mikepenz/FastAdapter) an adapter library for implementing recycler view
 * [Retrofit2](https://github.com/square/retrofit) type-safe HTTP client for Android 
 * [RxJava2 & RxAndroid](https://github.com/ReactiveX/RxAndroid) for composing asynchronous and event-based programs by using observable sequences
@@ -12,11 +11,14 @@ Livescore app with [Football Data](https://www.football-data.org/) api (work in 
 * [Butterknife](https://github.com/JakeWharton/butterknife) bind Android views
 * [ThreeTenAPB](https://github.com/JakeWharton/ThreeTenABP)
 
-#### In Future
+### Screenshot
+[Assets folder](/assets)
+
+### In Future
 - [ ] Architecture pattern (MVVM/MVP)
 - [ ] Dependency Injection (Dagger/Koin)
 - [ ] Jetpack Components (Navigation, Paging, Slices, WorkManager, etc)
 - [ ] View Binding
 
-#### Contribute
+### Contribute
 If you want to contribute in this repository feel free to fork the repo and hopefully we can learn from each other. your help is very welcome.
