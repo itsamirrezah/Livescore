@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:paddingTop="@dimen/spacing_large"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
@@ -17,12 +18,23 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+            android:textSize="24sp"
             android:textColor="?android:textColorPrimary"
-            android:textStyle="bold"
+            android:fontFamily="sans-serif"
             tools:text="Thursday" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+            android:textSize="22sp"
+            android:textColor="?android:textColorPrimary"
+            android:fontFamily="sans-serif"
+            android:text=", " />
+
         <View
-            android:layout_width="@dimen/spacing_medium"
+            android:layout_width="@dimen/spacing_small"
             android:layout_height="0dp">
 
         </View>
@@ -35,6 +47,8 @@
             android:gravity="center_vertical"
             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
             android:textColor="?android:textColorPrimary"
+            android:fontFamily="sans-serif"
+            android:textSize="24sp"
             tools:text="31 October" />
 
     </LinearLayout>

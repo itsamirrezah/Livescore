@@ -17,9 +17,15 @@
 
         <LinearLayout
             android:layout_width="match_parent"
+            android:minHeight="40dp"
             android:layout_height="wrap_content"
-            android:layout_margin="3dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+
+            >
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -35,11 +41,11 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center|center_vertical"
                     android:layout_weight="1"
+                    android:fontFamily="sans-serif-medium"
                     android:gravity="center|center_vertical"
                     android:maxLines="2"
                     android:text="Manchester United"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:textSize="14sp" />
 
                 <View
                     android:layout_width="5dp"
@@ -47,15 +53,16 @@
 
                 <ImageView
                     android:id="@+id/ivHomeTeam"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp" />
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:layout_weight="0.3"
+                android:layout_weight="0.1"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -72,10 +79,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
+                        android:fontFamily="sans-serif-black"
                         android:gravity="center"
                         android:text="12:00"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/tv_matchfix_stadium"
@@ -99,7 +106,8 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
                         android:gravity="center"
                         android:orientation="horizontal">
 
@@ -109,12 +117,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:fontFamily="sans-serif"
                             android:gravity="center"
                             android:text="2"
-                            android:textSize="18sp" />
+                            android:textSize="14sp" />
 
                         <View
-                            android:layout_width="10dp"
+                            android:layout_width="@dimen/spacing_small"
                             android:layout_height="0dp" />
 
                         <TextView
@@ -123,11 +132,11 @@
                             android:layout_gravity="center"
                             android:gravity="center"
                             android:text="|"
-                            android:textSize="24sp"
+                            android:textSize="18sp"
                             android:textStyle="bold" />
 
                         <View
-                            android:layout_width="10dp"
+                            android:layout_width="@dimen/spacing_small"
                             android:layout_height="0dp" />
 
                         <TextView
@@ -136,9 +145,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:fontFamily="sans-serif"
                             android:gravity="center"
                             android:text="3"
-                            android:textSize="18sp" />
+                            android:textSize="14sp" />
 
                     </LinearLayout>
 
@@ -147,11 +157,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_gravity="center"
-                        android:layout_weight="0.2"
+                        android:layout_weight="0.5"
+                        android:fontFamily="sans-serif-condensed-medium"
                         android:gravity="center"
-                        android:text="Live"
-                        android:textSize="12sp"
-                        android:textStyle="italic|bold" />
+                        android:text="Postponed"
+                        android:textSize="9sp" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -166,8 +176,9 @@
 
                 <ImageView
                     android:id="@+id/ivAwayTeam"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp" />
+                    android:layout_width="26dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center" />
 
                 <View
                     android:layout_width="5dp"
@@ -181,11 +192,11 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center|center_vertical"
                     android:layout_weight="1"
+                    android:fontFamily="sans-serif-medium"
                     android:gravity="center|center_vertical"
                     android:maxLines="2"
                     android:text="Manchester City"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>
 

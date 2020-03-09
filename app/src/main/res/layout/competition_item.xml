@@ -16,9 +16,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:fontFamily="sans-serif-condensed-medium"
+            android:textSize="16sp"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             android:textColor="?android:textColorPrimary"
-            android:textStyle="bold"
             tools:text="Premier League" />
 
         <View android:layout_height="0dp"
@@ -33,6 +34,7 @@
             android:textSize="12sp"
             android:textAppearance="@style/TextAppearance.AppCompat.Headline"
             android:textColor="?android:textColorPrimary"
+            android:fontFamily="sans-serif-light"
             tools:text="Matchday #" />
 
     </LinearLayout>

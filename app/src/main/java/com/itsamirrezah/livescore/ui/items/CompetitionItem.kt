@@ -23,14 +23,14 @@ class CompetitionItem(
     override fun bindView(holder: CompetitionViewHolder, payloads: MutableList<Any>) {
         super.bindView(holder, payloads)
 
-        holder.tvCompName.setText(competition.competitionName)
-        holder.tvMatchday.append(competition.matchday.toString())
+        holder.tvCompName.text = competition.competitionName
+        holder.tvMatchday.text = "Matchday #" + competition.matchday
     }
 
     override fun unbindView(holder: CompetitionViewHolder) {
         super.unbindView(holder)
-        holder.tvCompName.setText("")
-        holder.tvMatchday.setText("Matchday #")
+        holder.tvCompName.text = ""
+        holder.tvMatchday.text = ""
     }
 
     class CompetitionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
