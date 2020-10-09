@@ -3,7 +3,6 @@ package com.itsamirrezah.livescore.data.services
 import com.itsamirrezah.livescore.data.models.CompetitionResponse
 import com.itsamirrezah.livescore.data.models.MatchResponse
 import com.itsamirrezah.livescore.data.models.TeamsCompResponse
-import io.reactivex.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
