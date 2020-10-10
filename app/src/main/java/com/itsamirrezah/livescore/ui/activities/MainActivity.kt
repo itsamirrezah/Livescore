@@ -97,10 +97,13 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         setupBottomSheets()
         requestMatches()
-        if (preferences.serverCompetitions.isEmpty())
+        if (preferences.serverCompetitions.isNotEmpty() && preferences.localCompetitions!!.size == preferences.serverCompetitions.size)
+            return
+
+        lifecycleScope.launch(Dispatchers.IO) {
             requestCompetitions()
-        else if (preferences.localCompetitions!!.size < preferences.serverCompetitions.size)
             requestTeams()
+        }
     }
 
     override fun onDestroy() {
@@ -210,17 +213,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     //get available competitions from api
-    private fun requestCompetitions() {
+    private suspend fun requestCompetitions() {
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            catchIOException {
-                val availableCompetitions = FootbalDataApiImp.getApi().getCompetitions()
-                    //convert from data model to ui model
-                    .competitions.flatMap { listOf(CompetitionUi(it.id, it.name)) }
-                //put data on shared preferences
-                preferences.serverCompetitions = availableCompetitions
-            }
-            requestTeams()
+        catchIOException {
+            val availableCompetitions = FootbalDataApiImp.getApi().getCompetitions()
+                //convert from data model to ui model
+                .competitions.flatMap { listOf(CompetitionUi(it.id, it.name)) }
+            //put data on shared preferences
+            preferences.serverCompetitions = availableCompetitions
         }
     }
 
@@ -237,30 +237,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     //fetch teams info from api and put them on shared preferences & local database
-    private fun requestTeams() {
+    private suspend fun requestTeams() {
         val comps = preferences.serverCompetitions
             //convert List<CompetitionUi> to List<String>
             .map { it.id.toString() }
             //returns a list containing all elements of the serverCompetitions which aren't available in localCompetitions
             .minus(preferences.localCompetitions!!.toList())
 
-
         comps.map { id ->
-            lifecycleScope.launch(Dispatchers.IO) {
-                catchIOException {
+            catchIOException {
+                lifecycleScope.launch(Dispatchers.IO) {
                     //gets teams information from api
-                    val teams = FootbalDataApiImp.getApi().getTeamsByCompetition(id.toInt()).teams
+                    FootbalDataApiImp.getApi().getTeamsByCompetition(id.toInt())
                         .also {
                             //put teams info on local database
-                            LivescoreDb.getInstance(this@MainActivity).teamsDao().insertTeams(it)
+                            LivescoreDb.getInstance(this@MainActivity).teamsDao()
+                                .insertTeams(it.teams)
                         }
-                        //convert data model to ui model
-                        .map { team -> CompetitionUi(team.id, team.name) }
-                    //put retrieved competitions on shared preferences
-                    val localComps = preferences.localCompetitions!!.toMutableList()
-                    for (team in teams)
-                        localComps.add(team.id.toString())
-                    preferences.localCompetitions = localComps.toSet()
+                        .also {
+                            //put retrieved competitions on shared preferences
+                            val localComps = preferences.localCompetitions!!.toMutableSet()
+                            localComps.add(it.competition.id.toString())
+                            preferences.localCompetitions = localComps.toSet()
+                        }
                 }
             }
         }
