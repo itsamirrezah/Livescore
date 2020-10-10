@@ -36,13 +36,8 @@ import com.mikepenz.fastadapter.GenericFastAdapter
 import com.mikepenz.fastadapter.adapters.GenericItemAdapter
 import com.mikepenz.fastadapter.adapters.ModelAdapter
 import com.mikepenz.fastadapter.ui.items.ProgressItem
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.functions.BiFunction
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
@@ -79,7 +74,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fastAdapter: GenericFastAdapter
     private var footerAdapter = GenericItemAdapter()
     private var headerAdapter = GenericItemAdapter()
-    private var compositeDisposable = CompositeDisposable()
     private var loadToTop = false
     private lateinit var endlessScroll: EndlessScrollListener
     private lateinit var preferences: SharedPreferencesUtil
@@ -104,11 +98,6 @@ class MainActivity : AppCompatActivity() {
             requestCompetitions()
             requestTeams()
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        compositeDisposable.clear()
     }
 
     @OnClick(R.id.btnFilterDone)
@@ -372,63 +361,62 @@ class MainActivity : AppCompatActivity() {
 
     private val onTeamInfo: OnTeamInfo = object : OnTeamInfo {
 
-        var matchFlags: Disposable? = null
         override fun getTeamsFlag(homeTeamId: Int, awayTeamId: Int, onResult: OnResult) {
 
-            //get team flag urls from database
-            //combine the emission of two observables via the BiFunction
-            matchFlags = Observable.zip(
-                LivescoreDb.getInstance(this@MainActivity).teamsDao().getTeamById(homeTeamId),
-                LivescoreDb.getInstance(this@MainActivity).teamsDao().getTeamById(awayTeamId),
-                BiFunction { homeTeam: Team, awayTeam: Team ->
-                    //map data model to ui model
-                    Pair(
-                        TeamModel(homeTeam.id, homeTeam.name, homeTeam.crestUrl),
-                        TeamModel(awayTeam.id, awayTeam.name, awayTeam.crestUrl)
-                    )
+            lifecycleScope.launch(Dispatchers.IO) {
+                val homeTeam = async {
+                    LivescoreDb.getInstance(this@MainActivity).teamsDao().getTeamById(homeTeamId)
                 }
-                //get flags drawable
-            ).map {
-                val homeDrawable = try {
-                    Glide.with(this@MainActivity).load(it.first.flag).submit().get()
-                } catch (e: Exception) {
-                    null
+                val awayTeam = async {
+                    LivescoreDb.getInstance(this@MainActivity).teamsDao().getTeamById(awayTeamId)
                 }
-                val awayDrawable = try {
-                    Glide.with(this@MainActivity).load(it.second.flag).submit().get()
-                } catch (e: Exception) {
-                    null
-                }
+                val teams = Pair(homeTeam.await(), awayTeam.await())
 
-                it.first.flagDrawable = homeDrawable
-                it.second.flagDrawable = awayDrawable
-                it
-            }.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ data ->
-                    //todo: replace if condition with match.id
-                    if (data.first.flagDrawable != null || data.second.flagDrawable != null)
-                        itemAdapter.models
-                            .asSequence()
-                            .filterIsInstance<MatchModel>()
-                            .find {
-                                //todo: use match.id
-                                return@find it.homeTeam.id == data.first.id && it.awayTeam.id == data.second.id
-                            }
-                            .apply {
-                                //update recyclerView with new flags
-                                this!!.homeTeam.flagDrawable = data.first.flagDrawable
-                                this.awayTeam.flagDrawable = data.second.flagDrawable
-                                fastAdapter.notifyAdapterItemChanged(
-                                    itemAdapter.models.indexOf(
-                                        this
+                teams.let {
+                    Pair(
+                        TeamModel(it.first.id, it.first.name, it.first.crestUrl),
+                        TeamModel(it.second.id, it.second.name, it.second.crestUrl)
+                    )
+                }.let {
+                    val homeDrawable = try {
+                        Glide.with(this@MainActivity).load(it.first.flag).submit().get()
+                    } catch (e: Exception) {
+                        null
+                    }
+                    val awayDrawable = try {
+                        Glide.with(this@MainActivity).load(it.second.flag).submit().get()
+                    } catch (e: Exception) {
+                        null
+                    }
+
+                    it.first.flagDrawable = homeDrawable
+                    it.second.flagDrawable = awayDrawable
+                    it
+                }.also { matchTeams ->
+                    withContext(Dispatchers.Main) {
+                        //todo: replace if condition with match.id
+                        if (matchTeams.first.flagDrawable != null || matchTeams.second.flagDrawable != null)
+                            itemAdapter.models
+                                .asSequence()
+                                .filterIsInstance<MatchModel>()
+                                .find {
+                                    //todo: use match.id
+                                    return@find it.homeTeam.id == matchTeams.first.id && it.awayTeam.id == matchTeams.second.id
+                                }
+                                .apply {
+                                    //update recyclerView with new flags
+                                    this!!.homeTeam.flagDrawable = matchTeams.first.flagDrawable
+                                    this.awayTeam.flagDrawable = matchTeams.second.flagDrawable
+
+                                    fastAdapter.notifyAdapterItemChanged(
+                                        itemAdapter.models.indexOf(this@apply)
                                     )
-                                )
-                                onResult.onSuccess()
-                            }
-                }, {
-                    print(it.message)
-                })
+                                    onResult.onSuccess()
+                                }
+                    }
+                }
+            }
+
         }
     }
 }

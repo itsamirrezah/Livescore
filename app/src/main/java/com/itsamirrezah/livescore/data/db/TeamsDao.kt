@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.itsamirrezah.livescore.data.models.Team
-import io.reactivex.Observable
 
 @Dao
 interface TeamsDao {
@@ -14,5 +13,5 @@ interface TeamsDao {
     fun insertTeams(teams: List<Team>)
 
     @Query("select * from teams where id = :id")
-    fun getTeamById(id: Int): Observable<Team>
+    suspend fun getTeamById(id: Int): Team
 }
