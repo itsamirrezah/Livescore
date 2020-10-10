@@ -41,8 +41,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:tag=""
-                android:text="All"
-                />
+                android:text="All" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipStatusLive"
@@ -50,8 +49,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:tag="LIVE"
-                android:text="Live"
-                />
+                android:text="Live" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipStatusFinished"
@@ -59,8 +57,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:tag="FINISHED"
-                android:text="Finished"
-                />
+                android:text="Finished" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipStatusPostponed"
@@ -68,8 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:tag="POSTPONED"
-                android:text="Postponed"
-                 />
+                android:text="Postponed" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipStatusSuspend"
@@ -77,8 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:tag="SUSPENDED"
-                android:text="Suspended"
-                />
+                android:text="Suspended" />
         </com.google.android.material.chip.ChipGroup>
 
         <View

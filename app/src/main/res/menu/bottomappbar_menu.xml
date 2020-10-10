@@ -5,15 +5,15 @@
         android:id="@+id/itemNight"
         android:icon="@drawable/ic_moon_black_24dp"
         android:title="Night Mode"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
     <item
         android:id="@+id/itemPreferences"
         android:icon="@drawable/ic_pref_black_24dp"
         android:title="Preferences"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
     <item
         android:id="@+id/itemToday"
         android:icon="@drawable/ic_today_black_24dp"
         android:title="Today"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
 </menu>

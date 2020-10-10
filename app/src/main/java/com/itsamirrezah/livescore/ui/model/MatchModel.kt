@@ -11,7 +11,7 @@ class MatchModel(
     val status: String,
     competition: CompetitionUi,
     val matchday: String
-) : ItemModel(utcDate,competition){
+) : ItemModel(utcDate, competition) {
 
     val shortTime: String
         get() = Utils.clockFormat(dateTime)

@@ -80,3 +80,5 @@ class Utils {
         }
     }
 }
+
+const val TAG = "Livescore"

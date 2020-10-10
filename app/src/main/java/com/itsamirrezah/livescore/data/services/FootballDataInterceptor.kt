@@ -1,11 +1,9 @@
 package com.itsamirrezah.livescore.data.services
 
 import okhttp3.Interceptor
-import okhttp3.Request
 import okhttp3.Response
-import java.lang.Exception
 
-class FootballDataInterceptor: Interceptor {
+class FootballDataInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
 

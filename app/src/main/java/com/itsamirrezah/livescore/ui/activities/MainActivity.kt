@@ -2,11 +2,14 @@ package com.itsamirrezah.livescore.ui.activities
 
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
@@ -27,35 +30,38 @@ import com.itsamirrezah.livescore.ui.model.*
 import com.itsamirrezah.livescore.util.EndlessScrollListener
 import com.itsamirrezah.livescore.util.SharedPreferencesUtil
 import com.itsamirrezah.livescore.util.Utils
-import com.itsamirrezah.livescore.util.svg.GlideApp
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.GenericFastAdapter
 import com.mikepenz.fastadapter.adapters.GenericItemAdapter
 import com.mikepenz.fastadapter.adapters.ModelAdapter
 import com.mikepenz.fastadapter.ui.items.ProgressItem
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.functions.BiFunction
-import io.reactivex.schedulers.Schedulers
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.HttpException
+import java.net.SocketTimeoutException
 
 class MainActivity : AppCompatActivity() {
 
     //views
     @BindView(R.id.recyclerView)
     lateinit var recyclerView: RecyclerView
+
     @BindView(R.id.bottomAppBar)
     lateinit var bottomAppBar: BottomAppBar
+
     @BindView(R.id.coordinator)
     lateinit var coordinator: CoordinatorLayout
     lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
+
     @BindView(R.id.chipGroupCompetition)
     lateinit var chipGroupCompetition: ChipGroup
+
     @BindView(R.id.chipGroupStatus)
     lateinit var chipGroupStatus: ChipGroup
+
     //data
     private val itemAdapter = ModelAdapter { item: ItemModel ->
         when (item) {
@@ -68,9 +74,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fastAdapter: GenericFastAdapter
     private var footerAdapter = GenericItemAdapter()
     private var headerAdapter = GenericItemAdapter()
-    private var compositeDisposable = CompositeDisposable()
     private var loadToTop = false
-    lateinit var endlessScroll: EndlessScrollListener
+    private lateinit var endlessScroll: EndlessScrollListener
     private lateinit var preferences: SharedPreferencesUtil
 
     /**
@@ -86,15 +91,13 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         setupBottomSheets()
         requestMatches()
-        if (preferences.serverCompetitions.isEmpty())
-            requestCompetitions()
-        else if (preferences.localCompetitions!!.size < preferences.serverCompetitions.size)
-            requestTeams()
-    }
+        if (preferences.serverCompetitions.isNotEmpty() && preferences.localCompetitions!!.size == preferences.serverCompetitions.size)
+            return
 
-    override fun onDestroy() {
-        super.onDestroy()
-        compositeDisposable.clear()
+        lifecycleScope.launch(Dispatchers.IO) {
+            requestCompetitions()
+            requestTeams()
+        }
     }
 
     @OnClick(R.id.btnFilterDone)
@@ -199,57 +202,56 @@ class MainActivity : AppCompatActivity() {
     }
 
     //get available competitions from api
-    private fun requestCompetitions() {
-        val requestCompetitions = FootbalDataApiImp.getApi().getCompetitions()
-            //returning competitions one by one from competitionResponse.competitions
-            .flatMap { Observable.fromIterable(it.competitions) }
-            //convert from data model to ui model
-            .map { CompetitionUi(it.id, it.name) }
-            //wait until all emissions done, then return data
-            .toList()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { competitions ->
-                //put data on shared preferences
-                preferences.serverCompetitions = competitions
-                requestTeams()
-            }
+    private suspend fun requestCompetitions() {
 
-        compositeDisposable.add(requestCompetitions)
+        catchIOException {
+            val availableCompetitions = FootbalDataApiImp.getApi().getCompetitions()
+                //convert from data model to ui model
+                .competitions.flatMap { listOf(CompetitionUi(it.id, it.name)) }
+            //put data on shared preferences
+            preferences.serverCompetitions = availableCompetitions
+        }
+    }
+
+    private suspend fun catchIOException(block: suspend () -> Unit) {
+        try {
+            block()
+        } catch (e: SocketTimeoutException) {
+            Toast.makeText(this, "Socket Timeout Exception", Toast.LENGTH_LONG).show()
+        } catch (e: HttpException) {
+            Toast.makeText(this, "Http Exception", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            Log.d(com.itsamirrezah.livescore.util.TAG, "catchIOException: ${e.message}")
+        }
     }
 
     //fetch teams info from api and put them on shared preferences & local database
-    private fun requestTeams() {
+    private suspend fun requestTeams() {
         val comps = preferences.serverCompetitions
             //convert List<CompetitionUi> to List<String>
             .map { it.id.toString() }
             //returns a list containing all elements of the serverCompetitions which aren't available in localCompetitions
             .minus(preferences.localCompetitions!!.toList())
 
-        val requestTeams = Observable.fromIterable(comps)
-            .switchMap {
-                //gets teams information from api
-                FootbalDataApiImp.getApi().getTeamsByCompetition(it.toInt())
-                    //if this call throws an exception, wait for 30 seconds, then repeat the request
-                    //common api error: api call limits has been reached (429)
-                    .retryWhen { it.delay(30, TimeUnit.SECONDS) }
+        comps.map { id ->
+            catchIOException {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    //gets teams information from api
+                    FootbalDataApiImp.getApi().getTeamsByCompetition(id.toInt())
+                        .also {
+                            //put teams info on local database
+                            LivescoreDb.getInstance(this@MainActivity).teamsDao()
+                                .insertTeams(it.teams)
+                        }
+                        .also {
+                            //put retrieved competitions on shared preferences
+                            val localComps = preferences.localCompetitions!!.toMutableSet()
+                            localComps.add(it.competition.id.toString())
+                            preferences.localCompetitions = localComps.toSet()
+                        }
+                }
             }
-            //put teams info on local database
-            .doOnNext {
-                LivescoreDb.getInstance(this).teamsDao().insertTeams(it.teams)
-            }
-            //convert data model to ui model
-            .map { CompetitionUi(it.competition.id, it.competition.name) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                //put retrieved competitions on shared preferences
-                val localComps = preferences.localCompetitions!!.toMutableSet()
-                localComps.add(it.id.toString())
-                preferences.localCompetitions = localComps.toSet()
-            }
-
-        compositeDisposable.add(requestTeams)
+        }
     }
 
     private fun addCompetitionChips() {
@@ -278,83 +280,74 @@ class MainActivity : AppCompatActivity() {
         val datesArg = date ?: Utils.getDates()
 
         endlessScroll.disable()
-        val requestMatches = FootbalDataApiImp.getApi()
-            .getMatches(datesArg.first, datesArg.second, statusArg!!, compsArgs)
-            //retry the failed request after 15 seconds
-            .retryWhen { it.delay(15, TimeUnit.SECONDS) }
-            //returning matches one by one from matchResponse.matches
-            .flatMap { Observable.fromIterable(it.matches) }
-            //change api model to ui model
-            .map {
-                MatchModel(
-                    mapTeamToUiModel(it.homeTeam),
-                    it.score.fullTime.homeTeam.toString(),
-                    mapTeamToUiModel(it.awayTeam),
-                    it.score.fullTime.awayTeam.toString(),
-                    it.utcDate,
-                    it.status,
-                    CompetitionUi(it.competition.id, it.competition.name),
-                    it.matchday.toString()
-                ) as ItemModel
-            } //group emissions base on their match dates
-            .groupBy { it.shortDate.date }
-            //group emissions base on their competition.id
-            .switchMap { it.groupBy { it.competition!!.id } }
-            .flatMapSingle { it.toList() }
-            .groupBy { it.first().shortDate.date }
-            .flatMapSingle { it.toList() }
-            .toList()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(this::onResponse, this::onError)
 
-        compositeDisposable.add(requestMatches)
+        lifecycleScope.launch {
+            catchIOException {
+                FootbalDataApiImp.getApi()
+                    .getMatches(datesArg.first, datesArg.second, statusArg!!, compsArgs).matches
+                    .flatMap {
+                        listOf(
+                            //change api model to ui model
+                            MatchModel(
+                                mapTeamToUiModel(it.homeTeam),
+                                it.score.fullTime.homeTeam.toString(),
+                                mapTeamToUiModel(it.awayTeam),
+                                it.score.fullTime.awayTeam.toString(),
+                                it.utcDate,
+                                it.status,
+                                CompetitionUi(it.competition.id, it.competition.name),
+                                it.matchday.toString()
+                            )
+                        )
+                        //group matches based on their dates
+                    }.groupBy { match -> match.shortDate.date }
+                    //map-> each item have a list of matches with the same date
+                    .map { map ->
+                        //group each item based on their competition.id
+                        map.value.groupBy { match -> match.competition!!.id }
+                    }
+                    //type(it): List<Map<Int, List<MatchModel>>>
+                    .also { onResponse(it) }
+            }
+        }
     }
 
     private fun mapTeamToUiModel(team: Team): TeamModel {
         return TeamModel(team.id, team.name)
     }
 
-    //add ui element (DateItem and CompetitionItem) to recycler view based on result
-    private fun onResponse(matchItems: List<List<MutableList<ItemModel>>>) {
-        val matchesObservable = Observable.fromIterable(matchItems)
-            .flatMapSingle {
-                // returning List<Item> (these items have the same competition and date) one by one from List<List<Item>
-                Observable.fromIterable(it)
-                    //add CompetitionModel to start of the list
-                    .map {
-                        val match = it.first() as MatchModel
-                        it.add(
-                            0,
-                            CompetitionModel(match.utcDate, match.competition, match.matchday)
-                        )
-                        it
-                    } // wait until all emissions done, then return data (List<List<ItemModel>>>)
-                    .toList()
-            } //add DateModel to start of the list
-            .map {
-                it.first().add(0, DateModel(it.first().first().utcDate))
-                //returning single list of all elements from all lists in the given list. (List<List<Item>> => List<Item>)
-                it.flatten()
-            } // wait until all emissions done, then return data (List<List<List<ItemModel>>>>)
-            .toList()
-            .subscribe { data -> updateRecyclerView(data) }
-        compositeDisposable.add(matchesObservable)
+    //create ui elements (DateItem and CompetitionItem) for recyclerView based on the result
+    private suspend fun onResponse(matchesByDate: List<Map<Int, List<MatchModel>>>) {
+        var items: MutableList<ItemModel> = mutableListOf()
+
+        matchesByDate.forEach { date ->
+            //add DateModel on start of the each list
+            items.add(DateModel(date.values.first().first().utcDate))
+            date.values.forEach { competitions ->
+                val first = competitions.first()
+                //add CompetitionModel on start of the each sub list
+                items.add(
+                    CompetitionModel(first.utcDate, first.competition!!, first.matchday)
+                )
+                //add MatchModels
+                competitions.forEach { match -> items.add(match) }
+            }
+        }
+        //update recyclerView with the new list
+        withContext(Dispatchers.Main) {
+            updateRecyclerView(items)
+        }
     }
 
-    private fun onError(throwable: Throwable) {
-        print("test")
-    }
-
-    private fun updateRecyclerView(items: MutableList<List<ItemModel>>) {
+    private fun updateRecyclerView(items: MutableList<ItemModel>) {
         endlessScroll.enable()
-        items.sortBy { it.first().shortDate }
+        items.sortBy { it.shortDate }
         if (loadToTop) {
             headerAdapter.clear()
-            itemAdapter.add(0, items.flatten())
+            itemAdapter.add(0, items)
         } else {
             footerAdapter.clear()
-            itemAdapter.add(items.flatten())
+            itemAdapter.add(items)
         }
     }
 
@@ -368,23 +361,23 @@ class MainActivity : AppCompatActivity() {
 
     private val onTeamInfo: OnTeamInfo = object : OnTeamInfo {
 
-        var matchFlags: Disposable? = null
         override fun getTeamsFlag(homeTeamId: Int, awayTeamId: Int, onResult: OnResult) {
 
-            //get team flag urls from database
-            //combine the emission of two observables via the BiFunction
-            matchFlags = Observable.zip(
-                LivescoreDb.getInstance(this@MainActivity).teamsDao().getTeamById(homeTeamId),
-                LivescoreDb.getInstance(this@MainActivity).teamsDao().getTeamById(awayTeamId),
-                BiFunction { homeTeam: Team, awayTeam: Team ->
-                    //map data model to ui model
-                    Pair(
-                        TeamModel(homeTeam.id, homeTeam.name, homeTeam.crestUrl),
-                        TeamModel(awayTeam.id, awayTeam.name, awayTeam.crestUrl)
-                    )
+            lifecycleScope.launch(Dispatchers.IO) {
+                val homeTeam = async {
+                    LivescoreDb.getInstance(this@MainActivity).teamsDao().getTeamById(homeTeamId)
                 }
-            //get flags drawable
-            ).map {
+                val awayTeam = async {
+                    LivescoreDb.getInstance(this@MainActivity).teamsDao().getTeamById(awayTeamId)
+                }
+                val teams = Pair(homeTeam.await(), awayTeam.await())
+
+                teams.let {
+                    Pair(
+                        TeamModel(it.first.id, it.first.name, it.first.crestUrl),
+                        TeamModel(it.second.id, it.second.name, it.second.crestUrl)
+                    )
+                }.let {
                     val homeDrawable = try {
                         Glide.with(this@MainActivity).load(it.first.flag).submit().get()
                     } catch (e: Exception) {
@@ -399,28 +392,31 @@ class MainActivity : AppCompatActivity() {
                     it.first.flagDrawable = homeDrawable
                     it.second.flagDrawable = awayDrawable
                     it
-                }.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ data ->
-                    //todo: replace if condition with match.id
-                    if (data.first.flagDrawable != null || data.first.flagDrawable != null)
-                        itemAdapter.models
-                            .asSequence()
-                            .filterIsInstance<MatchModel>()
-                            .find {
-                                //todo: use match.id
-                                return@find it.homeTeam.id == data.first.id && it.awayTeam.id == data.second.id
-                            }
-                            .apply {
-                                //update recyclerView with new flags
-                                this!!.homeTeam.flagDrawable = data.first.flagDrawable
-                                this.awayTeam.flagDrawable = data.second.flagDrawable
-                                fastAdapter.notifyAdapterItemChanged(itemAdapter.models.indexOf(this))
-                                onResult.onSuccess()
-                            }
-                }, {
-                    print(it.message)
-                })
+                }.also { matchTeams ->
+                    withContext(Dispatchers.Main) {
+                        //todo: replace if condition with match.id
+                        if (matchTeams.first.flagDrawable != null || matchTeams.second.flagDrawable != null)
+                            itemAdapter.models
+                                .asSequence()
+                                .filterIsInstance<MatchModel>()
+                                .find {
+                                    //todo: use match.id
+                                    return@find it.homeTeam.id == matchTeams.first.id && it.awayTeam.id == matchTeams.second.id
+                                }
+                                .apply {
+                                    //update recyclerView with new flags
+                                    this!!.homeTeam.flagDrawable = matchTeams.first.flagDrawable
+                                    this.awayTeam.flagDrawable = matchTeams.second.flagDrawable
+
+                                    fastAdapter.notifyAdapterItemChanged(
+                                        itemAdapter.models.indexOf(this@apply)
+                                    )
+                                    onResult.onSuccess()
+                                }
+                    }
+                }
+            }
+
         }
     }
 }
