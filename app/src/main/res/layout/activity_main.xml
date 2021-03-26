@@ -1,40 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
-    tools:context=".ui.activities.MainActivity">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/coordinator"
+    <data>
+
+    </data>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimary"
+        tools:context=".ui.activities.MainActivity">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/coordinator"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="@dimen/spacing_small"
-            android:layout_marginTop="@dimen/spacing_mlarge"
-            android:layout_marginRight="@dimen/spacing_small"
-            android:layout_marginBottom="@dimen/spacing_xxlarge">
+            android:layout_height="match_parent">
 
-        </androidx.recyclerview.widget.RecyclerView>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="@dimen/spacing_small"
+                android:layout_marginTop="@dimen/spacing_mlarge"
+                android:layout_marginRight="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_xxlarge">
 
-
-        <com.google.android.material.bottomappbar.BottomAppBar
-            android:id="@+id/bottomAppBar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:backgroundTint="@color/colorPrimaryDark"
-            android:layout_gravity="bottom"
-            app:menu="@menu/bottomappbar_menu"
-            app:navigationIcon="@drawable/ic_menu_black_24dp" />
-
-        <include layout="@layout/filter_match_sheet" />
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+            </androidx.recyclerview.widget.RecyclerView>
 
 
-</LinearLayout>
+            <com.google.android.material.bottomappbar.BottomAppBar
+                android:id="@+id/bottomAppBar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:backgroundTint="@color/colorPrimaryDark"
+                android:layout_gravity="bottom"
+                app:menu="@menu/bottomappbar_menu"
+                app:navigationIcon="@drawable/ic_menu_black_24dp" />
+
+            <include layout="@layout/filter_match_sheet" />
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+    </LinearLayout>
+</layout>
