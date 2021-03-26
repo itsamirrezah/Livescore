@@ -7,17 +7,14 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
+
 import com.bumptech.glide.Glide
-import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipDrawable
 import com.google.android.material.chip.ChipGroup
@@ -25,6 +22,7 @@ import com.itsamirrezah.livescore.R
 import com.itsamirrezah.livescore.data.db.LivescoreDb
 import com.itsamirrezah.livescore.data.models.Team
 import com.itsamirrezah.livescore.data.services.FootbalDataApiImp
+import com.itsamirrezah.livescore.databinding.ActivityMainBinding
 import com.itsamirrezah.livescore.ui.items.*
 import com.itsamirrezah.livescore.ui.model.*
 import com.itsamirrezah.livescore.util.EndlessScrollListener
@@ -36,6 +34,7 @@ import com.mikepenz.fastadapter.GenericFastAdapter
 import com.mikepenz.fastadapter.adapters.GenericItemAdapter
 import com.mikepenz.fastadapter.adapters.ModelAdapter
 import com.mikepenz.fastadapter.ui.items.ProgressItem
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -45,21 +44,11 @@ import java.net.SocketTimeoutException
 
 class MainActivity : AppCompatActivity() {
 
-    //views
-    @BindView(R.id.recyclerView)
-    lateinit var recyclerView: RecyclerView
-
-    @BindView(R.id.bottomAppBar)
-    lateinit var bottomAppBar: BottomAppBar
-
-    @BindView(R.id.coordinator)
-    lateinit var coordinator: CoordinatorLayout
     lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
 
-    @BindView(R.id.chipGroupCompetition)
     lateinit var chipGroupCompetition: ChipGroup
 
-    @BindView(R.id.chipGroupStatus)
+
     lateinit var chipGroupStatus: ChipGroup
 
     //data
@@ -83,8 +72,22 @@ class MainActivity : AppCompatActivity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        ButterKnife.bind(this)
+
+
+
+        val binding : ActivityMainBinding = DataBindingUtil.setContentView(this,R.layout.activity_main)
+
+        binding.lifecycleOwner = this
+
+        binding.recyclerView
+        binding.bottomAppBar
+        binding.coordinator
+        binding.root
+
+        chipGroupCompetition = findViewById(R.id.chipGroupCompetition)
+        chipGroupStatus = findViewById(R.id.chipGroupStatus)
+
+        findViewById<MaterialButton>(R.id.btnFilterDone).setOnClickListener { filterDone() }
         AndroidThreeTen.init(application)
         setupSharedPreference()
         setupBottomAppBar()
@@ -98,9 +101,10 @@ class MainActivity : AppCompatActivity() {
             requestCompetitions()
             requestTeams()
         }
+
     }
 
-    @OnClick(R.id.btnFilterDone)
+//    @OnClick(R.id.btnFilterDone)
     fun filterDone() {
         val competitionsSelected = mutableSetOf<String>()
         for (i in 0 until chipGroupCompetition.childCount) {

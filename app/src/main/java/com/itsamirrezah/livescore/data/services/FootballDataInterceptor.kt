@@ -9,7 +9,7 @@ class FootballDataInterceptor : Interceptor {
 
         val request = chain.request()
             .newBuilder()
-            .addHeader("X-Auth-Token", "24fb047edaa64dddb076659db5f5fd39")
+            .addHeader("X-Auth-Token", "71610fca6e1747489ffef41555f291e9")
             .build()
 
         return chain.proceed(request)
